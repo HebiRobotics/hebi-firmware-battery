@@ -5,17 +5,23 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16
+#   USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16
+  	USE_OPT = -ggdb -fomit-frame-pointer -falign-functions=16
+endif
+
+# Default -O1
+ifeq ($(OPTIM_LEVEL),)
+  OPTIM_LEVEL = -O1
 endif
 
 # C specific options here (added to USE_OPT).
 ifeq ($(USE_COPT),)
-  USE_COPT = 
+  USE_COPT = $(OPTIM_LEVEL)
 endif
 
 # C++ specific options here (added to USE_OPT).
 ifeq ($(USE_CPPOPT),)
-  USE_CPPOPT = -fno-rtti
+  USE_CPPOPT = -fno-rtti $(OPTIM_LEVEL)
 endif
 
 # Enable this if you want the linker to remove unused code and data.
@@ -83,7 +89,7 @@ endif
 #
 
 # Define project name here
-PROJECT = ch
+PROJECT = battery
 
 # Target settings.
 MCU  = cortex-m4
@@ -91,6 +97,7 @@ MCU  = cortex-m4
 # Imported source files and paths.
 CHIBIOS  := ./chibios/ChibiOS
 CONFDIR  := ./chibios/config
+BOARDDIR := ./chibios/boards
 BUILDDIR := ./build
 DEPDIR   := ./.dep
 
@@ -101,7 +108,7 @@ include $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/mk/startup_stm32l4xx.m
 # HAL-OSAL files (optional).
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/hal/ports/STM32/STM32L4xx/platform_l432.mk
-include $(CHIBIOS)/os/hal/boards/ST_NUCLEO32_L432KC/board.mk
+# include $(CHIBIOS)/os/hal/boards/ST_NUCLEO32_L432KC/board.mk
 include $(CHIBIOS)/os/hal/osal/rt-nil/osal.mk
 # RTOS files (optional).
 include $(CHIBIOS)/os/rt/rt.mk
@@ -112,6 +119,8 @@ include $(CHIBIOS)/tools/mk/autobuild.mk
 # include $(CHIBIOS)/os/test/test.mk
 # include $(CHIBIOS)/test/rt/rt_test.mk
 # include $(CHIBIOS)/test/oslib/oslib_test.mk
+
+include $(BOARDDIR)/HEBI_PCBA_2121_01/board.mk
 
 # Define linker script file here
 LDSCRIPT= $(STARTUPLD)/STM32L432xC.ld

@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug STM32L4",
+            "cwd": "${workspaceRoot}",
+            "executable": "${workspaceRoot}/build/battery.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "rtos": "auto",
+            "servertype": "openocd",
+            "configFiles": [
+                "interface/stlink.cfg", "target/stm32l4x.cfg"
+            ],
+            "searchDir": [],
+            "breakAfterReset":true,
+            "runToEntryPoint": "main",
+            "showDevDebugOutput": "none",
+            "gdbPath": "${env:HEBI_TOOLCHAIN}/arm-none-eabi-gdb",
+            "serverpath": "/usr/bin/openocd",
+        }
+    ]
+}
