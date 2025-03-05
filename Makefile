@@ -36,7 +36,7 @@ endif
 
 # Enable this if you want link time optimizations (LTO).
 ifeq ($(USE_LTO),)
-  USE_LTO = yes
+  USE_LTO = no
 endif
 
 # Enable this if you want to see the full log while compiling.
@@ -127,13 +127,17 @@ LDSCRIPT= $(STARTUPLD)/STM32L432xC.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CSRC = $(ALLCSRC) \
-       $(TESTSRC)
+CSRC = 	$(ALLCSRC) \
+		$(TESTSRC) \
+		$(wildcard ${COMMON}/hardware/system/*.c) \
+		$(CHIBIOS)/os/various/evtimer.c \
+		$(CHIBIOS)/os/various/syscalls.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
 CPPSRC = $(ALLCPPSRC) \
-       src/main.cpp
+		$(CHIBIOS)/os/various/cpp_wrappers/ch.cpp \
+       	src/main.cpp
 
 # List ASM source files here.
 ASMSRC = $(ALLASMSRC)
@@ -142,7 +146,14 @@ ASMSRC = $(ALLASMSRC)
 ASMXSRC = $(ALLXASMSRC)
 
 # Inclusion directories.
-INCDIR = $(CONFDIR) $(ALLINC) $(TESTINC)
+INCDIR = $(CONFDIR) $(ALLINC) $(TESTINC) \
+				$(CHIBIOS)/os/various/cpp_wrappers
+
+# ARM-specific options here
+AOPT =
+
+# THUMB-specific options here
+TOPT = -mthumb -DTHUMB
 
 # Define C warning options here.
 CWARN = -Wall -Wextra -Wundef -Wstrict-prototypes

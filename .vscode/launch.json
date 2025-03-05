@@ -13,7 +13,7 @@
                 "interface/stlink.cfg", "target/stm32l4x.cfg"
             ],
             "searchDir": [],
-            "breakAfterReset":true,
+            // "breakAfterReset":true,
             "runToEntryPoint": "main",
             "showDevDebugOutput": "none",
             "gdbPath": "${env:HEBI_TOOLCHAIN}/arm-none-eabi-gdb",

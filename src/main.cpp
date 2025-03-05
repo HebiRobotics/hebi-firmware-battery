@@ -14,8 +14,10 @@
     limitations under the License.
 */
 
-#include "ch.h"
-#include "hal.h"
+extern "C" {
+  #include <ch.h>
+  #include <hal.h>
+}
 // #include "rt_test_root.h"
 // #include "oslib_test_root.h"
 
