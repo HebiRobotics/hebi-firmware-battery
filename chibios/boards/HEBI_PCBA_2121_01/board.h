@@ -358,7 +358,7 @@
                                      PIN_ODR_HIGH(GPIOA_SPKR_PWM) |         \
                                      PIN_ODR_HIGH(GPIOA_PIN6) |             \
                                      PIN_ODR_HIGH(GPIOA_LED_G) |            \
-                                     PIN_ODR_HIGH(GPIOA_OUTPUT_EN) |        \
+                                     PIN_ODR_LOW(GPIOA_OUTPUT_EN) |         \
                                      PIN_ODR_HIGH(GPIOA_PIN9) |             \
                                      PIN_ODR_HIGH(GPIOA_CAN1_SHDN) |        \
                                      PIN_ODR_HIGH(GPIOA_CAN1_RX) |          \

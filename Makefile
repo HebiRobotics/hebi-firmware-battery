@@ -129,15 +129,19 @@ LDSCRIPT= $(STARTUPLD)/STM32L432xC.ld
 # setting.
 CSRC = 	$(ALLCSRC) \
 		$(TESTSRC) \
-		$(wildcard ${COMMON}/hardware/system/*.c) \
 		$(CHIBIOS)/os/various/evtimer.c \
-		$(CHIBIOS)/os/various/syscalls.c
+		$(wildcard ./chibios/bindings/*.c) \
+		$(CHIBIOS)/os/various/syscalls.c 
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
 CPPSRC = $(ALLCPPSRC) \
 		$(CHIBIOS)/os/various/cpp_wrappers/ch.cpp \
-       	src/main.cpp
+		$(wildcard ./chibios/bindings/*.cpp) \
+       	src/main.cpp \
+		$(wildcard ./src/modules/*.cpp) \
+		$(wildcard ./src/hardware/*.cpp) \
+		$(wildcard ./src/hardware/drivers/*.cpp) 
 
 # List ASM source files here.
 ASMSRC = $(ALLASMSRC)
@@ -146,8 +150,10 @@ ASMSRC = $(ALLASMSRC)
 ASMXSRC = $(ALLXASMSRC)
 
 # Inclusion directories.
-INCDIR = $(CONFDIR) $(ALLINC) $(TESTINC) \
-				$(CHIBIOS)/os/various/cpp_wrappers
+INCDIR = 	$(CONFDIR) $(ALLINC) $(TESTINC) \
+		 	$(CHIBIOS)/os/various/cpp_wrappers \
+		 	./chibios/bindings \
+			src src/hardware src/hardware/drivers src/modules
 
 # ARM-specific options here
 AOPT =

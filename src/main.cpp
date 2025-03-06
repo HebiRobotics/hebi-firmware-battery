@@ -15,9 +15,16 @@
 */
 
 extern "C" {
-  #include <ch.h>
-  #include <hal.h>
+#include <ch.h>
+#include <hal.h>
+void __late_init();
 }
+
+#include "modules/LED_Controller.h"
+#include "hardware/drivers/LED_RGB_PWM1.h"
+
+using namespace hebi::firmware;
+
 // #include "rt_test_root.h"
 // #include "oslib_test_root.h"
 
@@ -37,43 +44,42 @@ extern "C" {
 //   }
 // }
 
+
+hardware::LED_RGB_PWM1 rgb_led_driver;
+modules::LED_Controller status_led (rgb_led_driver);
+
+/**
+ * @brief Initializes hal and ChibiOS
+ *
+ * @note This function overrides the definition in crt0.c
+ *
+ * @note This function is called before any static constructors
+ *
+ * @return Void
+ */
+void __late_init() {
+    /*
+    * System initializations.
+    * - HAL (Hardware Abstraction Layer) initialization, this initializes 
+    *   the configured device drivers and performs the board-specific 
+    *   initializations.
+    * - Kernel initialization, the main() function becomes a thread and the
+    *   RTOS is active.
+    */
+    halInit();
+    chSysInit();
+}
+
 /*
  * Application entry point.
  */
 int main(void) {
 
-  /*
-   * System initializations.
-   * - HAL initialization, this also initializes the configured device drivers
-   *   and performs the board-specific initializations.
-   * - Kernel initialization, the main() function becomes a thread and the
-   *   RTOS is active.
-   */
-  halInit();
-  chSysInit();
+    status_led.green().fade();
 
-  /*
-   * Activates the serial driver 2 using the driver default configuration.
-   */
-  // sdStart(&SD2, NULL);
+    while (true) {
+        status_led.update();
 
-  /*
-   * Creates the blinker thread.
-   */
-  // chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO, Thread1, NULL);
-
-  /*
-   * Normal main() thread activity, in this demo it does nothing except
-   * sleeping in a loop and check the button state.
-   */
-  while (true) {
-    // if (!palReadLine(LINE_ARD_D3)) {
-    //   test_execute((BaseSequentialStream *)&SD2, &rt_test_suite);
-    //   test_execute((BaseSequentialStream *)&SD2, &oslib_test_suite);
-    // }
-    palClearLine(LINE_LED_G);
-    chThdSleepMilliseconds(500);
-    palSetLine(LINE_LED_G);
-    chThdSleepMilliseconds(500);
-  }
+        chThdSleepMilliseconds(1);
+    }
 }
