@@ -3,7 +3,7 @@
 #
 
 # Define project name here
-PROJECT = ch
+PROJECT = battery
 
 # Target settings.
 MCU  = cortex-m4
@@ -11,6 +11,7 @@ MCU  = cortex-m4
 # Imported source files and paths.
 CHIBIOS  := ./chibios/ChibiOS
 CONFDIR  := ./chibios/config
+# BOARDDIR := ./chibios/boards
 BUILDDIR := ./build
 DEPDIR   := ./.dep
 
@@ -38,13 +39,17 @@ LDSCRIPT= $(STARTUPLD)/STM32L432xC.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CHIBI_CSRC = $(ALLCSRC) \
-       $(TESTSRC) \
-       main.c
+CHIBI_CSRC = 	$(ALLCSRC) \
+		$(TESTSRC) \
+		$(CHIBIOS)/os/various/evtimer.c \
+		$(wildcard ./chibios/bindings/*.c) \
+		$(CHIBIOS)/os/various/syscalls.c 
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CHIBI_CPPSRC = $(ALLCPPSRC)
+CHIBI_CPPSRC = $(ALLCPPSRC) \
+		$(CHIBIOS)/os/various/cpp_wrappers/ch.cpp \
+		$(wildcard ./chibios/bindings/*.cpp)
 
 # List ASM source files here.
 ASMSRC = $(ALLASMSRC)
@@ -53,57 +58,13 @@ ASMSRC = $(ALLASMSRC)
 ASMXSRC = $(ALLXASMSRC)
 
 # Inclusion directories.
-CHIBI_INC = $(CONFDIR) $(ALLINC) $(TESTINC)
+CHIBI_INCDIR = $(CONFDIR) $(ALLINC) $(TESTINC) \
+		 	$(CHIBIOS)/os/various/cpp_wrappers \
+		 	./chibios/bindings \
+			src src/hardware src/hardware/drivers src/modules
 
-# Define C warning options here.
-CWARN = -Wall -Wextra -Wundef -Wstrict-prototypes
-
-# Define C++ warning options here.
-CPPWARN = -Wall -Wextra -Wundef
 
 #
 # Project, target, sources and paths
 ##############################################################################
 
-##############################################################################
-# Start of user section
-#
-
-# List all user C define here, like -D_DEBUG=1
-UDEFS =
-
-# Define ASM defines here
-UADEFS =
-
-# List all user directories here
-UINCDIR =
-
-# List the user directory to look for the libraries here
-ULIBDIR =
-
-# List all user libraries here
-ULIBS =
-
-#
-# End of user section
-##############################################################################
-
-##############################################################################
-# Common rules
-#
-
-RULESPATH = $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/mk
-include $(RULESPATH)/arm-none-eabi.mk
-include $(RULESPATH)/rules.mk
-
-#
-# Common rules
-##############################################################################
-
-##############################################################################
-# Custom rules
-#
-
-#
-# Custom rules
-##############################################################################

@@ -10,7 +10,8 @@
  * @author Yigit Bilgen (mbilgen@andrew)
  */
 
-#include "ChibiOS.h"
+#include <ch.hpp>
+ 
 #include <stdlib.h>
 
 void* operator new(size_t num) {
@@ -22,11 +23,21 @@ void operator delete(void* ptr) {
     chHeapFree(ptr);
 }
 
+void operator delete(void* ptr, unsigned int) {
+  if (ptr != NULL)
+    chHeapFree(ptr);
+}
+
 void* operator new [] (size_t num) {
   return chHeapAlloc(NULL, num);
 }
 
 void operator delete [] (void* ptr) {
+  if (ptr != NULL)
+    chHeapFree(ptr);
+}
+
+void operator delete [] (void* ptr, unsigned int) {
   if (ptr != NULL)
     chHeapFree(ptr);
 }

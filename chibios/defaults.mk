@@ -5,17 +5,23 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16
+#   USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16
+  	USE_OPT = -ggdb -fomit-frame-pointer -falign-functions=16
+endif
+
+# Default -O1
+ifeq ($(OPTIM_LEVEL),)
+  OPTIM_LEVEL = -O1
 endif
 
 # C specific options here (added to USE_OPT).
 ifeq ($(USE_COPT),)
-  USE_COPT = 
+  USE_COPT = $(OPTIM_LEVEL)
 endif
 
 # C++ specific options here (added to USE_OPT).
 ifeq ($(USE_CPPOPT),)
-  USE_CPPOPT = -fno-rtti
+  USE_CPPOPT = -fno-rtti $(OPTIM_LEVEL)
 endif
 
 # Enable this if you want the linker to remove unused code and data.
@@ -30,7 +36,7 @@ endif
 
 # Enable this if you want link time optimizations (LTO).
 ifeq ($(USE_LTO),)
-  USE_LTO = yes
+  USE_LTO = no
 endif
 
 # Enable this if you want to see the full log while compiling.
@@ -43,6 +49,12 @@ endif
 ifeq ($(USE_SMART_BUILD),)
   USE_SMART_BUILD = yes
 endif
+
+# Define C warning options here.
+CWARN = -Wall -Wextra -Wundef -Wstrict-prototypes
+
+# Define C++ warning options here.
+CPPWARN = -Wall -Wextra -Wundef
 
 #
 # Build global options
@@ -64,7 +76,6 @@ ifeq ($(USE_EXCEPTIONS_STACKSIZE),)
   USE_EXCEPTIONS_STACKSIZE = 0x400
 endif
 
-#todo - enable FPU?
 # Enables the use of FPU (no, softfp, hard).
 ifeq ($(USE_FPU),)
   USE_FPU = no
@@ -74,6 +85,12 @@ endif
 ifeq ($(USE_FPU_OPT),)
   USE_FPU_OPT = -mfloat-abi=$(USE_FPU) -mfpu=fpv4-sp-d16
 endif
+
+# ARM-specific options here
+AOPT =
+
+# THUMB-specific options here
+TOPT = -mthumb -DTHUMB
 
 #
 # Architecture or project specific options
