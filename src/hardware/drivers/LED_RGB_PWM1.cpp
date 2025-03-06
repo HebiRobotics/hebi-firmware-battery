@@ -2,7 +2,7 @@
  * LED_RGB_PWM.h
  * 
  * Implementation of an RGB LED using PWMD1
- */
+*/
 
 #include "LED_RGB_PWM1.h"
 
@@ -30,6 +30,10 @@ namespace hebi::firmware::hardware {
 
 LED_RGB_PWM1::LED_RGB_PWM1(){
     pwmStart(&PWMD1, &rgb_led_pwm_cfg);
+
+    pwmEnableChannel(&PWMD1, 0, 0);
+    pwmEnableChannel(&PWMD1, 1, 0);
+    pwmEnableChannel(&PWMD1, 2, 0);
 }
 
 void LED_RGB_PWM1::colorUpdated(){

@@ -20,8 +20,10 @@ extern "C" {
 void __late_init();
 }
 
+#include "modules/Beep_Controller.h"
 #include "modules/LED_Controller.h"
 #include "hardware/drivers/LED_RGB_PWM1.h"
+#include "hardware/drivers/Beeper_PWM16.h"
 
 using namespace hebi::firmware;
 
@@ -45,6 +47,8 @@ using namespace hebi::firmware;
 // }
 
 
+hardware::Beeper_PWM16 beeper_driver(4000 /*4kHz*/);
+modules::Beep_Controller beeper (beeper_driver);
 hardware::LED_RGB_PWM1 rgb_led_driver;
 modules::LED_Controller status_led (rgb_led_driver);
 
@@ -76,9 +80,14 @@ void __late_init() {
 int main(void) {
 
     status_led.green().fade();
+    // beeper_driver.startBeep();
+    // chThdSleepMilliseconds(500);
+    // beeper_driver.stopBeep();
+    beeper.beepThrice(100);
 
     while (true) {
         status_led.update();
+        beeper.update();
 
         chThdSleepMilliseconds(1);
     }

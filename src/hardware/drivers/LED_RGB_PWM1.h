@@ -2,7 +2,7 @@
  * LED_RGB_PWM.h
  * 
  * Implementation of an RGB LED using PWMD1
- */
+*/
 
 #pragma once
 
