@@ -22,6 +22,7 @@ void __late_init();
 
 #include "modules/Beep_Controller.h"
 #include "modules/LED_Controller.h"
+#include "hardware/Pushbutton_Controller.h"
 #include "hardware/drivers/LED_RGB_PWM1.h"
 #include "hardware/drivers/Beeper_PWM16.h"
 
@@ -52,6 +53,8 @@ modules::Beep_Controller beeper (beeper_driver);
 hardware::LED_RGB_PWM1 rgb_led_driver;
 modules::LED_Controller status_led (rgb_led_driver);
 
+hardware::Pushbutton_Controller button (200, 400);
+
 /**
  * @brief Initializes hal and ChibiOS
  *
@@ -79,13 +82,30 @@ void __late_init() {
  */
 int main(void) {
 
-    status_led.green().fade();
+    // status_led.green().fade();
     // beeper_driver.startBeep();
     // chThdSleepMilliseconds(500);
     // beeper_driver.stopBeep();
-    beeper.beepThrice(100);
+    // beeper.beepThrice();
 
     while (true) {
+
+        button.update(palReadLine(LINE_PB_WKUP));
+
+        if(button.enabled()){
+            if(button.stateChanged()){
+                beeper.beepTwice();
+            }
+            status_led.green().fade();
+        } else {
+            if(button.stateChanged()){
+                beeper.beepOnce(400);
+            }
+            status_led.off();
+        }
+
+        palWriteLine(LINE_OUTPUT_EN, button.enabled());
+
         status_led.update();
         beeper.update();
 

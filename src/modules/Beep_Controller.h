@@ -25,9 +25,11 @@ public:
         uint16_t on_5 = 0, uint16_t off_5 = 0 
     );
 
-    void beepOnce(uint16_t time_ms) { setCode(time_ms, 1); }
-    void beepTwice(uint16_t time_ms) { setCode(time_ms, time_ms, time_ms, 1); }
-    void beepThrice(uint16_t time_ms) { setCode(time_ms, time_ms, time_ms, time_ms, time_ms, 1); }
+    static const uint16_t QUICK_BEEP_MS = 100;
+
+    void beepOnce(uint16_t time_ms = QUICK_BEEP_MS) { setCode(time_ms, 1); }
+    void beepTwice(uint16_t time_ms = QUICK_BEEP_MS) { setCode(time_ms, time_ms, time_ms, 1); }
+    void beepThrice(uint16_t time_ms = QUICK_BEEP_MS) { setCode(time_ms, time_ms, time_ms, time_ms, time_ms, 1); }
 protected:
     uint16_t trim(uint16_t time);
 

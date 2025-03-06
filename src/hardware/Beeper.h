@@ -1,5 +1,5 @@
 /**
- * LED_RGB.h
+ * Beeper.h
  * 
  * Simple interface class for a single-frequency speaker
  */
