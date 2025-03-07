@@ -53,7 +53,7 @@ modules::Beep_Controller beeper (beeper_driver);
 hardware::LED_RGB_PWM1 rgb_led_driver;
 modules::LED_Controller status_led (rgb_led_driver);
 
-hardware::Pushbutton_Controller button (200, 400);
+hardware::Pushbutton_Controller button (400 /*ms*/, 600 /*ms*/);
 
 /**
  * @brief Initializes hal and ChibiOS
