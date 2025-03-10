@@ -25,6 +25,7 @@ void __late_init();
 #include "hardware/Pushbutton_Controller.h"
 #include "hardware/drivers/LED_RGB_PWM1.h"
 #include "hardware/drivers/Beeper_PWM16.h"
+#include "hardware/drivers/battery_CAN.h"
 
 using namespace hebi::firmware;
 
@@ -54,6 +55,8 @@ hardware::LED_RGB_PWM1 rgb_led_driver;
 modules::LED_Controller status_led (rgb_led_driver);
 
 hardware::Pushbutton_Controller button (400 /*ms*/, 600 /*ms*/);
+
+hardware::Battery_CAN can;
 
 /**
  * @brief Initializes hal and ChibiOS

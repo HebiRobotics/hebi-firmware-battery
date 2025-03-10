@@ -301,7 +301,7 @@
                                      PIN_MODE_ALTERNATE(GPIOA_CAN1_TX) |    \
                                      PIN_MODE_ALTERNATE(GPIOA_SWDIO) |      \
                                      PIN_MODE_ALTERNATE(GPIOA_SWCLK) |      \
-                                     PIN_MODE_ANALOG(GPIOA_CAN1_STB))
+                                     PIN_MODE_OUTPUT(GPIOA_CAN1_STB))
 #define VAL_GPIOA_OTYPER            (PIN_OTYPE_PUSHPULL(GPIOA_PB_WKUP) |    \
                                      PIN_OTYPE_PUSHPULL(GPIOA_PIN1) |       \
                                      PIN_OTYPE_PUSHPULL(GPIOA_IBAT_SNS) |   \
@@ -349,7 +349,7 @@
                                      PIN_PUPDR_FLOATING(GPIOA_CAN1_TX) |    \
                                      PIN_PUPDR_PULLUP(GPIOA_SWDIO) |        \
                                      PIN_PUPDR_PULLDOWN(GPIOA_SWCLK) |      \
-                                     PIN_PUPDR_FLOATING(GPIOA_CAN1_STB))
+                                     PIN_PUPDR_PULLUP(GPIOA_CAN1_STB))
 #define VAL_GPIOA_ODR               (PIN_ODR_HIGH(GPIOA_PB_WKUP) |          \
                                      PIN_ODR_HIGH(GPIOA_PIN1) |             \
                                      PIN_ODR_HIGH(GPIOA_IBAT_SNS) |         \

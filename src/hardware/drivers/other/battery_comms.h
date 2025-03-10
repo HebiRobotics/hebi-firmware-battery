@@ -1,8 +1,6 @@
 #pragma once
 
-#include "hardware/ChibiOS.h"
 #include "hal.h"
-#include "sensor_data.h"
 
 namespace biorobotics {
 namespace firmware {
