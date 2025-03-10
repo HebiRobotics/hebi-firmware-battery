@@ -27,7 +27,7 @@ static const CANConfig cancfg = {
             CAN_BTR_SJW(0) | //Resync jump width
             CAN_BTR_TS2(1) |  //Time in TS2
             CAN_BTR_TS1(12) | //Time in TS1
-            CAN_BTR_BRP(9)    //Baud rate
+            CAN_BTR_BRP(10)    //Baud rate = APB1 / BRP
 };
 
 /*
