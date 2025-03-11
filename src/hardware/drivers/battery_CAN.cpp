@@ -25,7 +25,7 @@ static const CANConfig cancfg = {
             CAN_MCR_AWUM | //Auto wake-up mode
             CAN_MCR_TXFP,  //Chronological TX FIFO priority
     .btr =  //CAN_BTR_LBKM | //Loopback mode
-            CAN_BTR_SJW(0) | //Resync jump width
+            CAN_BTR_SJW(3) | //Resync jump width
             CAN_BTR_TS2(1) |  //Time in TS2
             CAN_BTR_TS1(12) | //Time in TS1
             CAN_BTR_BRP(10)    //Baud rate = APB1 / BRP
@@ -58,23 +58,33 @@ static THD_FUNCTION(can_rx, p) {
 /*
 * Transmitter thread.
 */
+static protocol::base_msg tx_msg(0, protocol::MessageType::MSG_INVALID);
+thread_reference_t can_tx_thread_ref = NULL;
+
 static THD_WORKING_AREA(can_tx_wa, 256);
 static THD_FUNCTION(can_tx, p) {
     CANTxFrame txmsg;
-    protocol::battery_state_msg test_msg(0x01, 1, 2, 3, 4); //TEST
+    // protocol::battery_state_msg test_msg(0x01, 1, 2, 3, 4); //TEST
 
     (void)p;
     chRegSetThreadName("transmitter");
-    txmsg.IDE = CAN_IDE_EXT;
-    txmsg.EID = test_msg.EID.raw;
-    txmsg.RTR = CAN_RTR_DATA;
-    txmsg.DLC = test_msg.len;
-    txmsg.data32[0] = test_msg.data32[0];
-    txmsg.data32[1] = test_msg.data32[1];
+    chThdSuspendS(&can_tx_thread_ref);
 
     while (!chThdShouldTerminateX()) {
+
+        chSysLock();
+        protocol::base_msg msg = tx_msg;
+        chSysUnlock();
+
+        txmsg.IDE = CAN_IDE_EXT;
+        txmsg.EID = msg.EID.raw;
+        txmsg.RTR = CAN_RTR_DATA;
+        txmsg.DLC = msg.len;
+        txmsg.data32[0] = msg.data32[0];
+        txmsg.data32[1] = msg.data32[1];
+
         canTransmit(&CAND1, CAN_ANY_MAILBOX, &txmsg, TIME_MS2I(100));
-        chThdSleepMilliseconds(500);
+        chThdSuspendS(&can_tx_thread_ref);
     }
 }
 
@@ -98,5 +108,14 @@ Battery_CAN::Battery_CAN(){
                     can_tx, NULL);
 }
    
+void Battery_CAN::sendMessage(protocol::base_msg msg){
+    if(can_tx_thread_ref != NULL){
+        chSysLock();
+        tx_msg = msg;
+        chSysUnlock();
+    
+        chThdResume(&can_tx_thread_ref, MSG_OK);
+    }
+}
     
 } //namespace hebi::firmware::hardware

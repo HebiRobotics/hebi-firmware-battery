@@ -26,28 +26,16 @@ void __late_init();
 #include "hardware/drivers/LED_RGB_PWM1.h"
 #include "hardware/drivers/Beeper_PWM16.h"
 #include "hardware/drivers/battery_CAN.h"
+#include "hardware/drivers/BQ34Z100_I2C.h"
 
 using namespace hebi::firmware;
 
-// #include "rt_test_root.h"
-// #include "oslib_test_root.h"
 
-/*
- * Green LED blinker thread, times are in milliseconds.
- */
-// static THD_WORKING_AREA(waThread1, 128);
-// static THD_FUNCTION(Thread1, arg) {
-
-//   (void)arg;
-//   chRegSetThreadName("blinker");
-//   while (true) {
-//     palClearLine(LINE_LED_G);
-//     chThdSleepMilliseconds(500);
-//     palSetLine(LINE_LED_G);
-//     chThdSleepMilliseconds(500);
-//   }
-// }
-
+const static I2CConfig I2C_BATTERY_CONFIG = {
+    0x00000E14, //this is generated using STM32CubeMX
+    0,
+    0
+};
 
 hardware::Beeper_PWM16 beeper_driver(4000 /*4kHz*/);
 modules::Beep_Controller beeper (beeper_driver);
@@ -57,6 +45,7 @@ modules::LED_Controller status_led (rgb_led_driver);
 hardware::Pushbutton_Controller button (400 /*ms*/, 600 /*ms*/);
 
 hardware::Battery_CAN can;
+hardware::BQ34Z100_I2C battery_i2c(&I2CD1, I2C_BATTERY_CONFIG);
 
 /**
  * @brief Initializes hal and ChibiOS
@@ -85,11 +74,6 @@ void __late_init() {
  */
 int main(void) {
 
-    // status_led.green().fade();
-    // beeper_driver.startBeep();
-    // chThdSleepMilliseconds(500);
-    // beeper_driver.stopBeep();
-    // beeper.beepThrice();
 
     while (true) {
 
@@ -111,6 +95,12 @@ int main(void) {
 
         status_led.update();
         beeper.update();
+
+        if(battery_i2c.hasData()){
+            auto data = battery_i2c.getData();
+            protocol::battery_state_msg msg(0x01, data.voltage, data.current, data.capacity_remaining, data.capacity_full);
+            can.sendMessage(msg);
+        }
 
         chThdSleepMilliseconds(1);
     }
