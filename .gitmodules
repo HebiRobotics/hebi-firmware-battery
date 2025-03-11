@@ -1,3 +1,6 @@
 [submodule "chibios/ChibiOS"]
 	path = chibios/ChibiOS
 	url = git@github.com:ChibiOS/ChibiOS.git
+[submodule "can-proto"]
+	path = can-proto
+	url = ./can-proto

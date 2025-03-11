@@ -12,7 +12,7 @@ CPPSRC := 	src/main.cpp \
 			$(wildcard ./src/hardware/*.cpp) \
 			$(wildcard ./src/hardware/drivers/*.cpp) 
 
-INCDIR := src src/hardware src/hardware/drivers src/modules
+INCDIR := src src/hardware src/hardware/drivers src/modules can-proto
 
 DDEFS := #-DCH_USE_MUTEXES=1 -DLWIP_THREAD_STACK_SIZE=2048 -DPORT_INT_REQUIRED_STACK=128 -DCHIBIOS3 -DBASE_BOARD_H=$(BASE_BOARD_H) -DBOARD_CLASS=$(BOARD_CLASS) -DELEC_VERSION_$(REV)
 UDEFS :=

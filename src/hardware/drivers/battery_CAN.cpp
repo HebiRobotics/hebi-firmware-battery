@@ -6,6 +6,7 @@
 
 #include "battery_CAN.h"
 #include "board.h"
+#include "all_msg.h"
 
 extern "C" {
 #include <ch.h>
@@ -60,15 +61,16 @@ static THD_FUNCTION(can_rx, p) {
 static THD_WORKING_AREA(can_tx_wa, 256);
 static THD_FUNCTION(can_tx, p) {
     CANTxFrame txmsg;
+    protocol::battery_state_msg test_msg(0x01, 1, 2, 3, 4); //TEST
 
     (void)p;
     chRegSetThreadName("transmitter");
     txmsg.IDE = CAN_IDE_EXT;
-    txmsg.EID = 0x01234567;
+    txmsg.EID = test_msg.EID.raw;
     txmsg.RTR = CAN_RTR_DATA;
-    txmsg.DLC = 8;
-    txmsg.data32[0] = 0x55AA55AA;
-    txmsg.data32[1] = 0x00FF00FF;
+    txmsg.DLC = test_msg.len;
+    txmsg.data32[0] = test_msg.data32[0];
+    txmsg.data32[1] = test_msg.data32[1];
 
     while (!chThdShouldTerminateX()) {
         canTransmit(&CAND1, CAN_ANY_MAILBOX, &txmsg, TIME_MS2I(100));
