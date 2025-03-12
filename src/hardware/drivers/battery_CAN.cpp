@@ -59,8 +59,6 @@ static THD_FUNCTION(can_rx, p) {
 /*
 * Transmitter thread.
 */
-static bool has_new_msg_ = false;
-static protocol::base_msg tx_msg(0, protocol::MessageType::MSG_INVALID);
 thread_t *can_tx_thread_;
 // event_source_t tx_msg_event_source;
 

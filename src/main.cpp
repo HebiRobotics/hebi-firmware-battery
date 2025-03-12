@@ -95,6 +95,8 @@ int main(void) {
 
         status_led.update();
         beeper.update();
+        
+        can.update();
 
         if(battery_i2c.hasData()){
             auto data = battery_i2c.getData();

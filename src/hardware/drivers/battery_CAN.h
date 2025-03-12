@@ -7,7 +7,7 @@
 #pragma once
 
 #include "all_msg.h"
-#include "driver/parser.h"
+#include "driver/battery_node.h"
 
 extern "C" {
 #include <ch.h>
@@ -17,7 +17,7 @@ extern "C" {
 
 namespace hebi::firmware::hardware {
 
-class Battery_CAN : public protocol::Message_Parser {
+class Battery_CAN : public protocol::Battery_Node {
 public:
     Battery_CAN();
 
