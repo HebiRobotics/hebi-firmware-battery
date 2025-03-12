@@ -8,12 +8,9 @@
 #include "board.h"
 #include "all_msg.h"
 
-extern "C" {
-#include <ch.h>
-#include <hal.h>
-}
-
 namespace hebi::firmware::hardware {
+
+static Battery_CAN *driver = nullptr;
 
 /*
  * Internal loopback mode, 500KBaud, automatic wakeup, automatic recover
@@ -21,7 +18,8 @@ namespace hebi::firmware::hardware {
  * See section 42.7.7 on the STM32 reference manual.
  */
 static const CANConfig cancfg = {
-    .mcr =  CAN_MCR_ABOM | //Auto bus-off management
+    .mcr =  CAN_MCR_NART | //No Auto retry
+            CAN_MCR_ABOM | //Auto bus-off management
             CAN_MCR_AWUM | //Auto wake-up mode
             CAN_MCR_TXFP,  //Chronological TX FIFO priority
     .btr =  //CAN_BTR_LBKM | //Loopback mode
@@ -34,6 +32,7 @@ static const CANConfig cancfg = {
 /*
 * Receiver thread.
 */
+thread_t *can_rx_thread_;
 static THD_WORKING_AREA(can_rx1_wa, 256);
 static THD_FUNCTION(can_rx, p) {
     CANDriver *canp = (CANDriver *)p;
@@ -49,7 +48,9 @@ static THD_FUNCTION(can_rx, p) {
         while (canReceive(canp, CAN_ANY_MAILBOX,
                             &rxmsg, TIME_IMMEDIATE) == MSG_OK) {
             /* Process message.*/
-            palToggleLine(LINE_LED_R);
+            // palToggleLine(LINE_LED_R);
+            
+            driver->addRxMessage(protocol::base_msg(rxmsg.EID, rxmsg.DLC, rxmsg.data8));
         }
     }
     chEvtUnregister(&CAND1.rxfull_event, &el);
@@ -58,39 +59,55 @@ static THD_FUNCTION(can_rx, p) {
 /*
 * Transmitter thread.
 */
+static bool has_new_msg_ = false;
 static protocol::base_msg tx_msg(0, protocol::MessageType::MSG_INVALID);
-thread_reference_t can_tx_thread_ref = NULL;
+thread_t *can_tx_thread_;
+// event_source_t tx_msg_event_source;
+
+#define CAN_TX_MSG_EVENT_MASK EVENT_MASK(0)
 
 static THD_WORKING_AREA(can_tx_wa, 256);
 static THD_FUNCTION(can_tx, p) {
+    
+    // event_listener_t tx_msg_listener;
     CANTxFrame txmsg;
     // protocol::battery_state_msg test_msg(0x01, 1, 2, 3, 4); //TEST
 
     (void)p;
     chRegSetThreadName("transmitter");
-    chThdSuspendS(&can_tx_thread_ref);
+    //chEvtRegisterMask(&tx_msg_event_source, &tx_msg_listener, CAN_TX_MSG_EVENT_MASK);
 
     while (!chThdShouldTerminateX()) {
+        /* Waiting for any of the events we're registered on.*/
+        eventmask_t evt = chEvtWaitAny(ALL_EVENTS);
 
-        chSysLock();
-        protocol::base_msg msg = tx_msg;
-        chSysUnlock();
+        if(evt & CAN_TX_MSG_EVENT_MASK){
+            bool has_data = true;
+            while(has_data){
+                auto msg_opt = driver->getTxMessage();
+                if(msg_opt.has_value()){
+                    auto msg = msg_opt.value();
 
-        txmsg.IDE = CAN_IDE_EXT;
-        txmsg.EID = msg.EID.raw;
-        txmsg.RTR = CAN_RTR_DATA;
-        txmsg.DLC = msg.len;
-        txmsg.data32[0] = msg.data32[0];
-        txmsg.data32[1] = msg.data32[1];
+                    txmsg.IDE = CAN_IDE_EXT;
+                    txmsg.EID = msg.EID.raw;
+                    txmsg.RTR = CAN_RTR_DATA;
+                    txmsg.DLC = msg.len;
+                    txmsg.data32[0] = msg.data32[0];
+                    txmsg.data32[1] = msg.data32[1];
+            
+                    canTransmit(&CAND1, CAN_ANY_MAILBOX, &txmsg, TIME_MS2I(100));
+                } else {
+                    has_data = false;
+                }
 
-        canTransmit(&CAND1, CAN_ANY_MAILBOX, &txmsg, TIME_MS2I(100));
-        chThdSuspendS(&can_tx_thread_ref);
+            }
+        }
     }
 }
 
 
 Battery_CAN::Battery_CAN(){
-
+    driver = this;
 
     palWriteLine(LINE_CAN1_STB, PAL_LOW);
     palWriteLine(LINE_CAN1_SHDN, PAL_LOW);
@@ -102,19 +119,17 @@ Battery_CAN::Battery_CAN(){
   /*
    * Starting the transmitter and receiver threads.
    */
-  chThdCreateStatic(can_rx1_wa, sizeof(can_rx1_wa), NORMALPRIO + 7,
+  can_rx_thread_ = chThdCreateStatic(can_rx1_wa, sizeof(can_rx1_wa), NORMALPRIO + 7,
                     can_rx, &CAND1);
-  chThdCreateStatic(can_tx_wa, sizeof(can_tx_wa), NORMALPRIO + 7,
+  can_tx_thread_ = chThdCreateStatic(can_tx_wa, sizeof(can_tx_wa), NORMALPRIO + 7,
                     can_tx, NULL);
 }
    
 void Battery_CAN::sendMessage(protocol::base_msg msg){
-    if(can_tx_thread_ref != NULL){
-        chSysLock();
-        tx_msg = msg;
-        chSysUnlock();
-    
-        chThdResume(&can_tx_thread_ref, MSG_OK);
+    addTxMessage(msg);
+
+    if(can_tx_thread_ != NULL){    
+        chEvtSignal(can_tx_thread_, CAN_TX_MSG_EVENT_MASK);
     }
 }
     

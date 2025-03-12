@@ -14,7 +14,7 @@ static THD_FUNCTION(batteryUpdateThread, arg) {
 
         ref->update();
 
-        chThdSleepUntilWindowed(time, chTimeAddX(time, TIME_MS2I(500)));
+        chThdSleepUntilWindowed(time, chTimeAddX(time, TIME_MS2I(100)));
     }
 
     return;

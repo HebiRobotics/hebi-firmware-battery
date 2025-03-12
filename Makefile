@@ -10,7 +10,8 @@ CSRC := 	$(wildcard src/*.c)
 CPPSRC := 	src/main.cpp \
 			$(wildcard ./src/modules/*.cpp) \
 			$(wildcard ./src/hardware/*.cpp) \
-			$(wildcard ./src/hardware/drivers/*.cpp) 
+			$(wildcard ./src/hardware/drivers/*.cpp) \
+			$(wildcard ./can-proto/driver/*.cpp) 
 
 INCDIR := src src/hardware src/hardware/drivers src/modules can-proto
 
