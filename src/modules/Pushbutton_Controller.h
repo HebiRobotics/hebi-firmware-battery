@@ -8,7 +8,7 @@
 
 #include <stdint.h>
 
-namespace hebi::firmware::hardware {
+namespace hebi::firmware::modules {
 
 class Pushbutton_Controller {
 public:
@@ -67,6 +67,14 @@ public:
             return true;
         }
         return false;
+    }
+
+    void forceEnabled(){
+        button_state_ = ButtonState::ENABLED_LOCKED;
+    }
+
+    void forceDisabled(){
+        button_state_ = ButtonState::DISABLED_LOCKED;
     }
 
 private:

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "all_msg.h"
-#include "driver/battery_node.h"
+#include "battery_node.h"
 
 extern "C" {
 #include <ch.h>
@@ -17,9 +17,10 @@ extern "C" {
 
 namespace hebi::firmware::hardware {
 
-class Battery_CAN : public protocol::Battery_Node {
+class Battery_CAN : public Battery_Node {
 public:
-    Battery_CAN();
+    Battery_CAN(hardware::Flash_Database& database, modules::LED_Controller& led, 
+        modules::Pushbutton_Controller& button_ctrl);
 
     void sendMessage(protocol::base_msg msg);
 };

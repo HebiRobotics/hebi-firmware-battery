@@ -104,7 +104,10 @@ static THD_FUNCTION(can_tx, p) {
 }
 
 
-Battery_CAN::Battery_CAN(){
+Battery_CAN::Battery_CAN(hardware::Flash_Database& database, modules::LED_Controller& led, 
+    modules::Pushbutton_Controller& button_ctrl) :
+    Battery_Node(database, led, button_ctrl) {
+
     driver = this;
 
     palWriteLine(LINE_CAN1_STB, PAL_LOW);

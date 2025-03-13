@@ -7,7 +7,7 @@ include chibios/defaults.mk
 include chibios/chibios.mk
 
 CSRC := 	$(wildcard src/*.c)
-CPPSRC := 	src/main.cpp \
+CPPSRC := 	$(wildcard ./src/*.cpp) \
 			$(wildcard ./src/modules/*.cpp) \
 			$(wildcard ./src/hardware/*.cpp) \
 			$(wildcard ./src/hardware/drivers/*.cpp) \

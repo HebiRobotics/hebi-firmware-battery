@@ -22,11 +22,12 @@ void __late_init();
 
 #include "modules/Beep_Controller.h"
 #include "modules/LED_Controller.h"
-#include "hardware/Pushbutton_Controller.h"
+#include "modules/Pushbutton_Controller.h"
 #include "hardware/drivers/LED_RGB_PWM1.h"
 #include "hardware/drivers/Beeper_PWM16.h"
 #include "hardware/drivers/battery_CAN.h"
 #include "hardware/drivers/BQ34Z100_I2C.h"
+#include "hardware/drivers/Flash_STM32L4.h"
 
 using namespace hebi::firmware;
 
@@ -42,9 +43,11 @@ modules::Beep_Controller beeper (beeper_driver);
 hardware::LED_RGB_PWM1 rgb_led_driver;
 modules::LED_Controller status_led (rgb_led_driver);
 
-hardware::Pushbutton_Controller button (400 /*ms*/, 600 /*ms*/);
+modules::Pushbutton_Controller button (400 /*ms*/, 600 /*ms*/);
 
-hardware::Battery_CAN can;
+hardware::Flash_STM32L4 database;
+
+hardware::Battery_CAN can (database, status_led, button);
 hardware::BQ34Z100_I2C battery_i2c(&I2CD1, I2C_BATTERY_CONFIG);
 
 /**
@@ -73,8 +76,6 @@ void __late_init() {
  * Application entry point.
  */
 int main(void) {
-
-
     while (true) {
 
         button.update(palReadLine(LINE_PB_WKUP));
