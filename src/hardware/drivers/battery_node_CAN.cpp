@@ -1,16 +1,16 @@
 /**
- * battery_CAN.cpp
+ * Battery_Node_CAN.cpp
  * 
  * 
 */
 
-#include "battery_CAN.h"
+#include "battery_node_CAN.h"
 #include "board.h"
 #include "all_msg.h"
 
 namespace hebi::firmware::hardware {
 
-static Battery_CAN *driver = nullptr;
+static Battery_Node_CAN *driver = nullptr;
 
 /*
  * Internal loopback mode, 500KBaud, automatic wakeup, automatic recover
@@ -50,7 +50,7 @@ static THD_FUNCTION(can_rx, p) {
             /* Process message.*/
             // palToggleLine(LINE_LED_R);
             
-            driver->addRxMessage(protocol::base_msg(rxmsg.EID, rxmsg.DLC, rxmsg.data8));
+            driver->can_node_.addRxMessage(protocol::base_msg(rxmsg.EID, rxmsg.DLC, rxmsg.data8));
         }
     }
     chEvtUnregister(&CAND1.rxfull_event, &el);
@@ -82,7 +82,7 @@ static THD_FUNCTION(can_tx, p) {
         if(evt & CAN_TX_MSG_EVENT_MASK){
             bool has_data = true;
             while(has_data){
-                auto msg_opt = driver->getTxMessage();
+                auto msg_opt = driver->can_node_.getTxMessage();
                 if(msg_opt.has_value()){
                     auto msg = msg_opt.value();
 
@@ -104,30 +104,30 @@ static THD_FUNCTION(can_tx, p) {
 }
 
 
-Battery_CAN::Battery_CAN(hardware::Flash_Database& database, modules::LED_Controller& led, 
-    modules::Pushbutton_Controller& button_ctrl) :
-    Battery_Node(database, led, button_ctrl) {
+Battery_Node_CAN::Battery_Node_CAN(Battery_Node& can_node) :
+    can_node_(can_node) {
 
     driver = this;
 
     palWriteLine(LINE_CAN1_STB, PAL_LOW);
     palWriteLine(LINE_CAN1_SHDN, PAL_LOW);
-  /*
-   * Activates the CAN drivers 1 and 2.
-   */
-  canStart(&CAND1, &cancfg);
+    
+    /*
+    * Activates the CAN driver
+    */
+    canStart(&CAND1, &cancfg);
 
-  /*
-   * Starting the transmitter and receiver threads.
-   */
-  can_rx_thread_ = chThdCreateStatic(can_rx1_wa, sizeof(can_rx1_wa), NORMALPRIO + 7,
-                    can_rx, &CAND1);
-  can_tx_thread_ = chThdCreateStatic(can_tx_wa, sizeof(can_tx_wa), NORMALPRIO + 7,
-                    can_tx, NULL);
+    /*
+    * Starting the transmitter and receiver threads.
+    */
+    can_rx_thread_ = chThdCreateStatic(can_rx1_wa, sizeof(can_rx1_wa), NORMALPRIO + 7,
+                        can_rx, &CAND1);
+    can_tx_thread_ = chThdCreateStatic(can_tx_wa, sizeof(can_tx_wa), NORMALPRIO + 7,
+                        can_tx, NULL);
 }
    
-void Battery_CAN::sendMessage(protocol::base_msg msg){
-    addTxMessage(msg);
+void Battery_Node_CAN::sendMessage(protocol::base_msg msg){
+    can_node_.addTxMessage(msg);
 
     if(can_tx_thread_ != NULL){    
         chEvtSignal(can_tx_thread_, CAN_TX_MSG_EVENT_MASK);

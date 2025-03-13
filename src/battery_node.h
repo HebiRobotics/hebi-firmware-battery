@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include "can-proto/driver/parser.h"
+#include "can-proto/driver/base_node.h"
 #include "hardware/Flash_Database.h"
 #include "modules/LED_Controller.h"
 #include "modules/Pushbutton_Controller.h"
 
 namespace hebi::firmware {
 
-class Battery_Node : public protocol::Message_Parser {
+class Battery_Node : public protocol::Base_Node {
 public:
     Battery_Node(hardware::Flash_Database& database, 
         modules::LED_Controller& led, 
@@ -22,7 +22,7 @@ public:
     void addTxMessage(protocol::base_msg msg) override {
         if(!node_id_valid_) return;
 
-        Message_Parser::addTxMessage(msg);
+        Base_Node::addTxMessage(msg);
     }
 
 protected:

@@ -16,7 +16,7 @@ void Battery_Node::initNodeID(){
 }
 
 void Battery_Node::update() {
-    Message_Parser::update();
+    Base_Node::update();
     
 }
 

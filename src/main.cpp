@@ -25,9 +25,11 @@ void __late_init();
 #include "modules/Pushbutton_Controller.h"
 #include "hardware/drivers/LED_RGB_PWM1.h"
 #include "hardware/drivers/Beeper_PWM16.h"
-#include "hardware/drivers/battery_CAN.h"
+#include "hardware/drivers/battery_node_CAN.h"
 #include "hardware/drivers/BQ34Z100_I2C.h"
 #include "hardware/drivers/Flash_STM32L4.h"
+
+#include "battery_node.h"
 
 using namespace hebi::firmware;
 
@@ -47,7 +49,8 @@ modules::Pushbutton_Controller button (400 /*ms*/, 600 /*ms*/);
 
 hardware::Flash_STM32L4 database;
 
-hardware::Battery_CAN can (database, status_led, button);
+Battery_Node battery_node(database, status_led, button);
+hardware::Battery_Node_CAN can(battery_node);
 hardware::BQ34Z100_I2C battery_i2c(&I2CD1, I2C_BATTERY_CONFIG);
 
 /**
@@ -97,7 +100,7 @@ int main(void) {
         status_led.update();
         beeper.update();
         
-        can.update();
+        battery_node.update();
 
         if(battery_i2c.hasData()){
             auto data = battery_i2c.getData();

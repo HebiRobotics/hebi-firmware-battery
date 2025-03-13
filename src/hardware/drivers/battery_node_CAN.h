@@ -1,5 +1,5 @@
 /**
- * battery_CAN.h
+ * Battery_Node_CAN.h
  * 
  * 
 */
@@ -17,12 +17,13 @@ extern "C" {
 
 namespace hebi::firmware::hardware {
 
-class Battery_CAN : public Battery_Node {
+class Battery_Node_CAN {
 public:
-    Battery_CAN(hardware::Flash_Database& database, modules::LED_Controller& led, 
-        modules::Pushbutton_Controller& button_ctrl);
+    Battery_Node_CAN(Battery_Node& can_node);
 
     void sendMessage(protocol::base_msg msg);
+
+    Battery_Node& can_node_;
 };
 
 } //namespace hebi::firmware::hardware
