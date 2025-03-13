@@ -102,9 +102,9 @@ int main(void) {
         
         battery_node.update();
 
-        if(battery_i2c.hasData()){
+        if(battery_i2c.hasData() && battery_node.shouldSendBatteryData()){
             auto data = battery_i2c.getData();
-            protocol::battery_state_msg msg(0x01, data.voltage, data.current, data.capacity_remaining, data.capacity_full);
+            protocol::battery_state_msg msg(battery_node.nodeID(), data.voltage, data.current, data.capacity_remaining, data.capacity_full);
             can.sendMessage(msg);
         }
 

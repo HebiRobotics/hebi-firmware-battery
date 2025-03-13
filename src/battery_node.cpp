@@ -20,7 +20,21 @@ void Battery_Node::update() {
     
 }
 
-void Battery_Node::recvd_ctrl_set_node_addr(protocol::ctrl_set_node_id_msg msg){
+void Battery_Node::recvd_cmd_start_data(protocol::cmd_start_data_msg msg){
+    //Request must be coming from master node
+    if(msg.EID.node_id != 0x00 && node_id_ != protocol::DEFAULT_NODE_ID) return; 
+
+    send_battery_data_ = true; 
+}
+
+void Battery_Node::recvd_ctrl_poll_node_id(protocol::ctrl_poll_node_id_msg msg){
+    //Request must be coming from master node
+    if(msg.EID.node_id != 0x00 && node_id_ != protocol::DEFAULT_NODE_ID) return; 
+
+    addTxMessage(protocol::ctrl_poll_node_id_msg(node_id_));
+}
+
+void Battery_Node::recvd_ctrl_set_node_id(protocol::ctrl_set_node_id_msg msg){
     if(msg.EID.node_id != node_id_) return;
 
     uint8_t new_node_id = msg.new_node_id();

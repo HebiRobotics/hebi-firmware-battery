@@ -25,14 +25,26 @@ public:
         Base_Node::addTxMessage(msg);
     }
 
+    bool shouldSendBatteryData(){
+        return send_battery_data_;
+    }
+
+    uint8_t nodeID(){
+        return node_id_;
+    }
+
 protected:
     void initNodeID();
 
-    void recvd_ctrl_set_node_addr(protocol::ctrl_set_node_id_msg msg) override;
+    void recvd_ctrl_poll_node_id(protocol::ctrl_poll_node_id_msg msg) override;
+    void recvd_ctrl_set_node_id(protocol::ctrl_set_node_id_msg msg) override;
+
+    void recvd_cmd_start_data(protocol::cmd_start_data_msg msg) override;
     void recvd_cmd_set_led(protocol::cmd_set_led_msg msg) override;
     void recvd_cmd_disable_output(protocol::cmd_disable_output_msg msg) override;
     void recvd_cmd_enable_output(protocol::cmd_enable_output_msg msg) override;
     
+    bool send_battery_data_ { false };
     bool node_id_valid_ { false };
     uint8_t node_id_ { protocol::DEFAULT_NODE_ID };
 

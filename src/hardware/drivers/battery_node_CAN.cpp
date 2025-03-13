@@ -18,7 +18,7 @@ static Battery_Node_CAN *driver = nullptr;
  * See section 42.7.7 on the STM32 reference manual.
  */
 static const CANConfig cancfg = {
-    .mcr =  CAN_MCR_NART | //No Auto retry
+    .mcr =  //CAN_MCR_NART | //No Auto retry
             CAN_MCR_ABOM | //Auto bus-off management
             CAN_MCR_AWUM | //Auto wake-up mode
             CAN_MCR_TXFP,  //Chronological TX FIFO priority
