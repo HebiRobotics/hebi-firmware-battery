@@ -8,6 +8,7 @@
 
 #include "all_msg.h"
 #include "battery_node.h"
+#include "Driver.h"
 
 extern "C" {
 #include <ch.h>
@@ -17,11 +18,14 @@ extern "C" {
 
 namespace hebi::firmware::hardware {
 
-class Battery_Node_CAN {
+class Battery_Node_CAN : public Driver {
 public:
     Battery_Node_CAN(Battery_Node& can_node);
 
     void sendMessage(protocol::base_msg msg);
+
+    void startDriver();
+    void stopDriver();
 
     Battery_Node& can_node_;
 };

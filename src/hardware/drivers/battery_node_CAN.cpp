@@ -109,13 +109,7 @@ Battery_Node_CAN::Battery_Node_CAN(Battery_Node& can_node) :
 
     driver = this;
 
-    palWriteLine(LINE_CAN1_STB, PAL_LOW);
-    palWriteLine(LINE_CAN1_SHDN, PAL_LOW);
-    
-    /*
-    * Activates the CAN driver
-    */
-    canStart(&CAND1, &cancfg);
+    startDriver();
 
     /*
     * Starting the transmitter and receiver threads.
@@ -124,6 +118,20 @@ Battery_Node_CAN::Battery_Node_CAN(Battery_Node& can_node) :
                         can_rx, &CAND1);
     can_tx_thread_ = chThdCreateStatic(can_tx_wa, sizeof(can_tx_wa), NORMALPRIO + 7,
                         can_tx, NULL);
+}
+
+void Battery_Node_CAN::startDriver() {
+    palWriteLine(LINE_CAN1_STB, PAL_LOW);
+    palWriteLine(LINE_CAN1_SHDN, PAL_LOW);
+    
+    canStart(&CAND1, &cancfg);
+}
+
+void Battery_Node_CAN::stopDriver() {
+    palWriteLine(LINE_CAN1_STB, PAL_HIGH);
+    palWriteLine(LINE_CAN1_SHDN, PAL_HIGH);
+    
+    canStop(&CAND1);
 }
    
 void Battery_Node_CAN::sendMessage(protocol::base_msg msg){

@@ -32,6 +32,14 @@ driver_(driver), config_(config) {
         this); /* Thread parameter.    */
 }
 
+void BQ34Z100_I2C::startDriver(){
+    //Do Nothing?
+}
+
+void BQ34Z100_I2C::stopDriver(){
+    //Do Nothing?
+}
+
 bool BQ34Z100_I2C::readRegister(uint8_t addr, uint16_t& data){
     uint8_t tx_data[1] = {addr};
     uint8_t rx_data[1] = {0};

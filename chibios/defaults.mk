@@ -6,7 +6,7 @@
 # Compiler options here.
 ifeq ($(USE_OPT),)
 #   USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16
-  	USE_OPT = -ggdb -fomit-frame-pointer -falign-functions=16
+  	USE_OPT = -g3 -ggdb -fomit-frame-pointer -falign-functions=16 -fno-use-linker-plugin
 endif
 
 # Default -O1
@@ -21,7 +21,7 @@ endif
 
 # C++ specific options here (added to USE_OPT).
 ifeq ($(USE_CPPOPT),)
-  USE_CPPOPT = -fno-rtti $(OPTIM_LEVEL)
+  USE_CPPOPT = -std=gnu++17 -fno-exceptions -fno-rtti $(OPTIM_LEVEL)
 endif
 
 # Enable this if you want the linker to remove unused code and data.
@@ -31,7 +31,7 @@ endif
 
 # Linker extra options here.
 ifeq ($(USE_LDOPT),)
-  USE_LDOPT = 
+  USE_LDOPT = -fno-lto
 endif
 
 # Enable this if you want link time optimizations (LTO).

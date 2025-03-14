@@ -30,7 +30,7 @@ namespace hebi::firmware::hardware {
 
 Beeper_PWM16::Beeper_PWM16(uint16_t frequency){
     beeper_pwm_config.frequency = frequency * beeper_pwm_config.period;
-    pwmStart(&PWMD16, &beeper_pwm_config);
+    startDriver();
 }
 
 void Beeper_PWM16::startBeep(){
@@ -41,4 +41,12 @@ void Beeper_PWM16::stopBeep(){
     pwmDisableChannel(&PWMD16, 0);
 }
     
+void Beeper_PWM16::startDriver(){
+    pwmStart(&PWMD16, &beeper_pwm_config);
+}
+
+void Beeper_PWM16::stopDriver(){
+    pwmStop(&PWMD16);
+}
+
 } //namespace hebi::firmware::hardware

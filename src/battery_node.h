@@ -12,6 +12,14 @@
 namespace hebi::firmware {
 
 class Battery_Node : public protocol::Base_Node {
+    enum class NodeState {
+        INIT = 0,
+        SHUTDOWN_TIMEOUT = 1,
+        SHUTDOWN = 2,
+        WAKEUP = 3,
+        ACTIVE = 4,
+    };
+
 public:
     Battery_Node(hardware::Flash_Database& database, 
         modules::LED_Controller& led, 
@@ -47,6 +55,7 @@ protected:
     bool send_battery_data_ { false };
     bool node_id_valid_ { false };
     uint8_t node_id_ { protocol::DEFAULT_NODE_ID };
+    NodeState state_ { NodeState::INIT };
 
     hardware::Flash_Database& database_;
     modules::LED_Controller& led_;

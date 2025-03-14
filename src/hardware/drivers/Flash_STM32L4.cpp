@@ -26,15 +26,26 @@ const MFSConfig mfscfg1 = {
 
 Flash_STM32L4::Flash_STM32L4(){
 
+    mfsObjectInit(&mfs1, &__nocache_mfsbuf1);
+
+    startDriver();
+
+}
+
+void Flash_STM32L4::startDriver(){
     /* 
     Starting EFL driver.
     No config needed.
     */
     eflStart(&EFLD1, NULL);
 
-    mfsObjectInit(&mfs1, &__nocache_mfsbuf1);
     mfsStart(&mfs1, &mfscfg1);
+}
 
+void Flash_STM32L4::stopDriver(){
+    eflStop(&EFLD1);
+
+    mfsStop(&mfs1);
 }
 
 bool Flash_STM32L4::getArray(FlashDatabaseKey key, uint8_t *data, uint32_t size) const {

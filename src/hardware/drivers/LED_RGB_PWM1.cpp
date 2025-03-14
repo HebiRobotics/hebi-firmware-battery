@@ -29,7 +29,7 @@ static PWMConfig rgb_led_pwm_cfg = {
 namespace hebi::firmware::hardware {
 
 LED_RGB_PWM1::LED_RGB_PWM1(){
-    pwmStart(&PWMD1, &rgb_led_pwm_cfg);
+    startDriver();
 
     pwmEnableChannel(&PWMD1, 0, 0);
     pwmEnableChannel(&PWMD1, 1, 0);
@@ -42,5 +42,13 @@ void LED_RGB_PWM1::colorUpdated(){
     pwmEnableChannel(&PWMD1, 2, b_);
 }
    
-    
+
+void LED_RGB_PWM1::startDriver(){
+    pwmStart(&PWMD1, &rgb_led_pwm_cfg);
+}
+
+void LED_RGB_PWM1::stopDriver(){
+    pwmStop(&PWMD1);
+}
+
 } //namespace hebi::firmware::hardware

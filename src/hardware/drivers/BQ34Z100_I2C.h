@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hal.h"
+#include "Driver.h"
 
 namespace hebi::firmware::hardware {
 
@@ -12,7 +13,7 @@ struct battery_data {
     uint16_t capacity_full {0};
 };
 
-class BQ34Z100_I2C {
+class BQ34Z100_I2C : public Driver {
 public:
     BQ34Z100_I2C(I2CDriver * const driver, const I2CConfig &config);
 
@@ -31,6 +32,8 @@ public:
         return tmp;
     }
 
+    void startDriver();
+    void stopDriver();
 
 private:
     bool readRegister(uint8_t addr, uint16_t& data);

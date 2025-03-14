@@ -28,8 +28,13 @@ void __late_init();
 #include "hardware/drivers/battery_node_CAN.h"
 #include "hardware/drivers/BQ34Z100_I2C.h"
 #include "hardware/drivers/Flash_STM32L4.h"
+#include "hardware/drivers/power_control.h"
 
 #include "battery_node.h"
+
+#include "hardware/Driver.h"
+#include <array>
+#include <vector>
 
 using namespace hebi::firmware;
 
@@ -52,6 +57,11 @@ hardware::Flash_STM32L4 database;
 Battery_Node battery_node(database, status_led, button);
 hardware::Battery_Node_CAN can(battery_node);
 hardware::BQ34Z100_I2C battery_i2c(&I2CD1, I2C_BATTERY_CONFIG);
+
+std::vector<hardware::Driver *> drivers{&beeper_driver, &rgb_led_driver, &can, &battery_i2c};
+// std::vector<hardware::Driver *> drivers {};
+
+hardware::Power_Control power_ctrl(drivers);
 
 /**
  * @brief Initializes hal and ChibiOS
@@ -79,6 +89,15 @@ void __late_init() {
  * Application entry point.
  */
 int main(void) {
+
+    if(!power_ctrl.wakeFromStandby()){
+        power_ctrl.sleep();
+    } else {
+        power_ctrl.clearStandby();
+    }
+
+    static uint16_t count = 0;
+
     while (true) {
 
         button.update(palReadLine(LINE_PB_WKUP));
@@ -92,6 +111,10 @@ int main(void) {
             if(button.stateChanged()){
                 beeper.beepOnce(400);
             }
+            count++;
+
+            if(count == 2000)
+                power_ctrl.sleep();
             status_led.off();
         }
 
