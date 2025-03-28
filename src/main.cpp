@@ -90,11 +90,11 @@ void __late_init() {
  */
 int main(void) {
 
-    if(!power_ctrl.wakeFromStandby()){
-        power_ctrl.sleep();
-    } else {
-        power_ctrl.clearStandby();
-    }
+    // if(!power_ctrl.wakeFromStandby()){
+    //     power_ctrl.sleep();
+    // } else {
+    //     power_ctrl.clearStandby();
+    // }
 
     static uint16_t count = 0;
 
@@ -113,12 +113,13 @@ int main(void) {
             }
             count++;
 
-            if(count == 2000)
-                power_ctrl.sleep();
+            // if(count == 2000)
+            //     power_ctrl.sleep();
             status_led.off();
         }
 
-        palWriteLine(LINE_OUTPUT_EN, button.enabled());
+        palWriteLine(LINE_DSG_EN, button.enabled());
+        palWriteLine(LINE_CHG_EN, button.enabled());
 
         status_led.update();
         beeper.update();
