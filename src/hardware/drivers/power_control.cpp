@@ -6,24 +6,17 @@
 
 #include "power_control.h"
 
-extern "C" {
-#include <ch.h>
-#include <hal.h>
+
+static void button_callback(void* aux){
+    //Do nothing
 }
 
 namespace hebi::firmware::hardware {
 
-static void button_callback(void *arg){
-    (void) arg;
-
-
-}
 
 Power_Control::Power_Control(std::vector<Driver *>& drivers) : 
     drivers_(drivers) {
     
-    // palEnableLineEvent(LINE_PB_WKUP, PAL_EVENT_MODE_FALLING_EDGE);
-    // palSetLineCallback(LINE_PB_WKUP, button_callback, NULL);
 }
     
 void Power_Control::startDrivers(){
@@ -49,31 +42,56 @@ void Power_Control::clearStandby(){
     PWR->CR3 &= ~PWR_CR3_APC; //Clear pullup config
 }
 
-void Power_Control::sleep(){
+void Power_Control::enterStop2(){
 
     stopDrivers();
 
     PWR->PUCRA |= (PWR_PUCRA_PA10 | PWR_PUCRA_PA15); //Pullup on CAN control pins
     PWR->PDCRH |= (PWR_PDCRH_PH3);
 
-    PWR->CR3 &= ~PWR_CR3_EWUP1; //Clear wakeup enable
+    PWR->CR3 &= ~PWR_CR3_EWUP4; //Clear wakeup enable
     PWR->SCR |= PWR_SCR_CWUF; //Clear wakeup flags
-    PWR->CR3 |= (PWR_CR3_EWUP1 | PWR_CR3_APC); //Enable wakeup pin and pullups
+    PWR->CR3 |= (PWR_CR3_EWUP4 | PWR_CR3_APC); //Enable wakeup pin and pullups
 
-    // PWR->CR4 |= PWR_CR4_WP1; //Set to falling edge wakeup
+    extiEnableLine(COMP1_OUTPUT, EXTI_MODE_RISING_EDGE | EXTI_MODE_ACTION_EVENT); //Enable EXTI for COMP 1
 
-    // PWR->CR1 |= PWR_CR1_LPR; //Set to low power mode
+    SYSCFG->EXTICR[0] &= ~SYSCFG_EXTICR1_EXTI2_Msk;
+    extiEnableLine(2, EXTI_MODE_RISING_EDGE | EXTI_MODE_ACTION_EVENT); //Enable EXTI for PA2
+
+    PWR->CR1 |= PWR_CR1_LPMS_STOP2;
+    SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+    
+    //----- Wait for Wakeup! -----
+
+    __SEV();
+    __WFE();
+    __WFE();
+
+    //----- Wakeup triggered! -----
+
+    SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk; //Clear SLEEPDEEP
+    PWR->CR3 &= ~(PWR_CR3_APC); //Disable pullups
+
+    startDrivers(); 
+}
+
+
+void Power_Control::enterStandby(){
+    stopDrivers();
+
+    PWR->PUCRA |= (PWR_PUCRA_PA10 | PWR_PUCRA_PA15); //Pullup on CAN control pins
+    PWR->PDCRH |= (PWR_PDCRH_PH3);
+
+    PWR->CR3 &= ~PWR_CR3_EWUP4; //Clear wakeup enable
+    PWR->SCR |= PWR_SCR_CWUF; //Clear wakeup flags
+    PWR->CR3 |= (PWR_CR3_EWUP4 | PWR_CR3_APC); //Enable wakeup pin and pullups
+
     PWR->CR1 |= PWR_CR1_LPMS_SHUTDOWN;
     SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
     
-    // __disable_irq();
-    // __SEV();
-    // __WFE();
     __WFI();
-    // __enable_irq();
 
     while(true) {} //Never reaches here
-    // startDrivers(); 
 }
 
 } //namespace hebi::firmware::hardware

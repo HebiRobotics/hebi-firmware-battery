@@ -44,8 +44,8 @@ void COMP_STM32L4::startDriver(){
 }
 
 void COMP_STM32L4::stopDriver(){
-    COMP1->CSR &= ~COMP_CSR_EN;
-    COMP1->CSR &= ~COMP_CSR_EN;
+    // COMP1->CSR &= ~COMP_CSR_EN; //Comp 1 is used for wakeup... do not disable!
+    COMP2->CSR &= ~COMP_CSR_EN;
 }
 
 } //namespace hebi::firmware::hardware

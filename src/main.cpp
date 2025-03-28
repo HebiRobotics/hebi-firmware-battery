@@ -92,12 +92,13 @@ void __late_init() {
  */
 int main(void) {
 
-    // if(!power_ctrl.wakeFromStandby()){
-    //     power_ctrl.sleep();
-    // } else {
-    //     power_ctrl.clearStandby();
-    // }
+    if(!power_ctrl.wakeFromStandby()){
+        power_ctrl.enterStop2();
+    } else {
+        power_ctrl.clearStandby();
+    }
 
+    rgb_led_driver.setColor(255,0,0);
     static uint16_t count = 0;
 
     while (true) {
@@ -118,7 +119,7 @@ int main(void) {
             count++;
 
             // if(count == 2000)
-            //     power_ctrl.sleep();
+            //     power_ctrl.enterStop2();
             status_led.off();
         }
 
