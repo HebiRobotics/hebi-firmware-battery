@@ -29,6 +29,7 @@ void __late_init();
 #include "hardware/drivers/BQ34Z100_I2C.h"
 #include "hardware/drivers/Flash_STM32L4.h"
 #include "hardware/drivers/power_control.h"
+#include "hardware/drivers/COMP_STM32L4.h"
 
 #include "battery_node.h"
 
@@ -49,6 +50,7 @@ hardware::Beeper_PWM16 beeper_driver(4000 /*4kHz*/);
 modules::Beep_Controller beeper (beeper_driver);
 hardware::LED_RGB_PWM1 rgb_led_driver;
 modules::LED_Controller status_led (rgb_led_driver);
+hardware::COMP_STM32L4 comp;
 
 modules::Pushbutton_Controller button (400 /*ms*/, 600 /*ms*/);
 
@@ -100,7 +102,9 @@ int main(void) {
 
     while (true) {
 
-        button.update(palReadLine(LINE_PB_WKUP));
+        volatile bool c1_val = comp.output_comp1();
+        volatile bool c2_val = comp.output_comp2();
+        button.update(palReadLine(LINE_PB_WKUP) && c2_val);
 
         if(button.enabled()){
             if(button.stateChanged()){

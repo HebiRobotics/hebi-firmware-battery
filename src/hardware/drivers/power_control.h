@@ -1,7 +1,7 @@
 /**
- * Beeper_PWM16.h
+ * Power_Control.h
  * 
- * Implementation of a beeper using PWMD16
+ * Low power control driver
 */
 
 #pragma once

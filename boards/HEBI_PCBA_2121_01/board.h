@@ -39,10 +39,9 @@
 /*
  * Board oscillators-related settings.
  * NOTE: HSE not fitted.
- * NOTE: LSE not fitted.
  */
 #if !defined(STM32_LSECLK)
-#define STM32_LSECLK                0U
+#define STM32_LSECLK                32768U
 #endif
 
 #define STM32_LSEDRV                (2U << 3U)
@@ -361,8 +360,8 @@
                                      PIN_ODR_HIGH(GPIOA_PIN5) |             \
                                      PIN_ODR_HIGH(GPIOA_SPKR_PWM) |         \
                                      PIN_ODR_HIGH(GPIOA_LED_G) |            \
-                                     PIN_ODR_HIGH(GPIOA_CHG_EN) |         \
-                                     PIN_ODR_HIGH(GPIOA_DSG_EN) |             \
+                                     PIN_ODR_LOW(GPIOA_CHG_EN) |         \
+                                     PIN_ODR_LOW(GPIOA_DSG_EN) |             \
                                      PIN_ODR_HIGH(GPIOA_CAN1_SHDN) |        \
                                      PIN_ODR_HIGH(GPIOA_CAN1_RX) |          \
                                      PIN_ODR_HIGH(GPIOA_CAN1_TX) |          \
