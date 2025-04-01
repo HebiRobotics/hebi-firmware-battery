@@ -30,6 +30,7 @@ void __late_init();
 #include "hardware/drivers/Flash_STM32L4.h"
 #include "hardware/drivers/power_control.h"
 #include "hardware/drivers/COMP_STM32L4.h"
+#include "hardware/drivers/ADC_control.h"
 
 #include "battery_node.h"
 
@@ -51,6 +52,7 @@ modules::Beep_Controller beeper (beeper_driver);
 hardware::LED_RGB_PWM1 rgb_led_driver;
 modules::LED_Controller status_led (rgb_led_driver);
 hardware::COMP_STM32L4 comp;
+hardware::ADC_control adc;
 
 modules::Pushbutton_Controller button (400 /*ms*/, 600 /*ms*/);
 
@@ -60,7 +62,7 @@ Battery_Node battery_node(database, status_led, button);
 hardware::Battery_Node_CAN can(battery_node);
 hardware::BQ34Z100_I2C battery_i2c(&I2CD1, I2C_BATTERY_CONFIG);
 
-std::vector<hardware::Driver *> drivers{&beeper_driver, &rgb_led_driver, &can, &battery_i2c};
+std::vector<hardware::Driver *> drivers{&beeper_driver, &rgb_led_driver, &can, &battery_i2c, &comp, &adc};
 // std::vector<hardware::Driver *> drivers {};
 
 hardware::Power_Control power_ctrl(drivers);
@@ -105,6 +107,7 @@ int main(void) {
 
         volatile bool c1_val = comp.output_comp1();
         volatile bool c2_val = comp.output_comp2();
+        volatile float voltage = adc.v_bat();
         button.update(palReadLine(LINE_PB_WKUP) && c2_val);
 
         if(button.enabled()){
@@ -118,8 +121,8 @@ int main(void) {
             }
             count++;
 
-            // if(count == 2000)
-            //     power_ctrl.enterStop2();
+            if(count == 2000)
+                power_ctrl.enterStop2();
             status_led.off();
         }
 
