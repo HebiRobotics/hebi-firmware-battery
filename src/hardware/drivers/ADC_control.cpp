@@ -19,12 +19,14 @@ namespace hebi::firmware::hardware {
 /* Buffers are allocated with size and address aligned to the cache
    line size.*/
 #define ADC_BUF_DEPTH       2
-#define ADC_NUM_CHANNELS    1
+#define ADC_NUM_CHANNELS    2
 #define ADC_MAX             (8.f * 4096.f) //8x oversampled 12 bits
-#define ADC_CONV_SCALE      ((3.3f / ADC_MAX) * (33.f + 2.f) / (2.f))
+#define ADC_CONV_SCALE_BAT  ((3.3f / ADC_MAX) * (33.f + 2.f) / (2.f))
+#define ADC_CONV_SCALE_EXT  ((3.3f / ADC_MAX) * (84.5f + 2.55f) / (2.55f))
 
 static adcsample_t samples[CACHE_SIZE_ALIGN(adcsample_t, ADC_NUM_CHANNELS * ADC_BUF_DEPTH)];
 uint8_t ADC_control::v_bat_which_index_ {0};
+uint8_t ADC_control::v_ext_which_index_ {0};
 
 void adccallback(ADCDriver *adcp) {
     ADC_control::dataUpdated(adcIsBufferComplete(adcp));
@@ -44,16 +46,16 @@ static const ADCConversionGroup adccfg = {
     .awd2cr       = 0U,
     .awd3cr       = 0U,
     .smpr         = {
-      ADC_SMPR1_SMP_AN8(ADC_SMPR_SMP_92P5), 
-      0U
+        ADC_SMPR1_SMP_AN6(ADC_SMPR_SMP_92P5) | ADC_SMPR1_SMP_AN8(ADC_SMPR_SMP_92P5), 
+        0U
     },
     .sqr          = {
-      ADC_SQR1_SQ1_N(ADC_CHANNEL_IN8),
-      0U,
-      0U,
-      0U
+        ADC_SQR1_SQ1_N(ADC_CHANNEL_IN8) | ADC_SQR1_SQ2_N(ADC_CHANNEL_IN6),
+        0U,
+        0U,
+        0U
     }
-  };
+};
 
 
 
@@ -63,11 +65,20 @@ ADC_control::ADC_control(){
 }
 
 void ADC_control::dataUpdated(bool which){
-    v_bat_which_index_ = (which) ? 1 : 0; //Change valid index to point at recent data
+    //Change valid index to point at recent data
+    uint8_t which_index = (which) ? ADC_NUM_CHANNELS : 0; 
+    
+    //Each value is in sequential order
+    v_bat_which_index_ = which_index;
+    v_ext_which_index_ = which_index + 1; 
 }
 
 float ADC_control::v_bat(){
-    return samples[v_bat_which_index_] * ADC_CONV_SCALE;
+    return samples[v_bat_which_index_] * ADC_CONV_SCALE_BAT;
+}
+
+float ADC_control::v_ext(){
+    return samples[v_ext_which_index_] * ADC_CONV_SCALE_EXT;
 }
 
 //TRM Page 552

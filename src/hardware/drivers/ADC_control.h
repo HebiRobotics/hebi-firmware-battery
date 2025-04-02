@@ -17,11 +17,13 @@ public:
 
     static void dataUpdated(bool which);
     float v_bat();
+    float v_ext();
     
     void startDriver();
     void stopDriver();
 private:
     static uint8_t v_bat_which_index_;
+    static uint8_t v_ext_which_index_;
 };
 
 } //namespace hebi::firmware::hardware

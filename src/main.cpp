@@ -58,14 +58,13 @@ modules::Pushbutton_Controller button (400 /*ms*/, 600 /*ms*/);
 
 hardware::Flash_STM32L4 database;
 
-Battery_Node battery_node(database, status_led, button);
-hardware::Battery_Node_CAN can(battery_node);
+hardware::Battery_Node_CAN can;
 hardware::BQ34Z100_I2C battery_i2c(&I2CD1, I2C_BATTERY_CONFIG);
 
 std::vector<hardware::Driver *> drivers{&beeper_driver, &rgb_led_driver, &can, &battery_i2c, &comp, &adc};
-// std::vector<hardware::Driver *> drivers {};
-
 hardware::Power_Control power_ctrl(drivers);
+
+Battery_Node battery_node(database, status_led, button, can, power_ctrl);
 
 /**
  * @brief Initializes hal and ChibiOS
@@ -105,34 +104,28 @@ int main(void) {
 
     while (true) {
 
-        volatile bool c1_val = comp.output_comp1();
-        volatile bool c2_val = comp.output_comp2();
         volatile float voltage = adc.v_bat();
-        button.update(palReadLine(LINE_PB_WKUP) && c2_val);
+        volatile float voltage_ext = adc.v_ext();
+
+        button.update(palReadLine(LINE_PB_WKUP));
 
         if(button.enabled()){
             if(button.stateChanged()){
                 beeper.beepTwice();
             }
-            status_led.green().fade();
         } else {
             if(button.stateChanged()){
                 beeper.beepOnce(400);
             }
-            count++;
-
-            if(count == 2000)
-                power_ctrl.enterStop2();
-            status_led.off();
         }
 
-        palWriteLine(LINE_DSG_EN, button.enabled());
-        palWriteLine(LINE_CHG_EN, button.enabled());
+        battery_node.update(comp.output_comp1(), comp.output_comp2());
 
         status_led.update();
         beeper.update();
-        
-        battery_node.update();
+
+        palWriteLine(LINE_DSG_EN, battery_node.dsgEnable());
+        palWriteLine(LINE_CHG_EN, battery_node.chgEnable());
 
         if(battery_i2c.hasData() && battery_node.shouldSendBatteryData()){
             auto data = battery_i2c.getData();
