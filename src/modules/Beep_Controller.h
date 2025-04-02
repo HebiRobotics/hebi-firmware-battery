@@ -27,9 +27,11 @@ public:
 
     static const uint16_t QUICK_BEEP_MS = 100;
 
+    bool active() { return code_index_ < code_length_; }
     void beepOnce(uint16_t time_ms = QUICK_BEEP_MS) { setCode(time_ms, 1); }
     void beepTwice(uint16_t time_ms = QUICK_BEEP_MS) { setCode(time_ms, time_ms, time_ms, 1); }
     void beepThrice(uint16_t time_ms = QUICK_BEEP_MS) { setCode(time_ms, time_ms, time_ms, time_ms, time_ms, 1); }
+    void beepFault(uint16_t time_ms = QUICK_BEEP_MS) { setCode(time_ms, time_ms, time_ms, time_ms, time_ms, 3*time_ms); }
 protected:
     uint16_t trim(uint16_t time);
 

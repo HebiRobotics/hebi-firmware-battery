@@ -10,12 +10,14 @@ using namespace hebi::firmware;
 Battery_Node::Battery_Node(hardware::Flash_Database& database, 
     modules::LED_Controller& led, 
     modules::Pushbutton_Controller& button_ctrl,
+    modules::Beep_Controller& beeper,
     hardware::Battery_Node_CAN& can_driver,
     hardware::Power_Control& power_ctrl) :
-    database_(database), led_(led), button_(button_ctrl), 
+    database_(database), led_(led), button_(button_ctrl), beeper_(beeper),
     can_driver_(can_driver), power_ctrl_(power_ctrl) {
     
     initNodeID();
+    changeNodeStateUnsafe(NodeState::LOW_POWER_TIMEOUT);
 }
 
 void Battery_Node::initNodeID(){
@@ -49,7 +51,7 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok) {
         } else if(button_.enabled()){
             changeNodeState(NodeState::OUTPUT_ENABLED);
         } else if(chg_detect) {
-            //TODO: Check voltage with ADC
+            //TODO: Check voltage with ADC, charge state, etc.
             changeNodeState(NodeState::CHARGE_ENABLED);
         } else if(state_counter_ == LOW_POWER_TIMEOUT_MS){
             enterLowPowerMode();
@@ -61,8 +63,10 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok) {
             changeNodeState(NodeState::FAULT);
         }
         break;
-    case NodeState::OUTPUT_ENABLED:
     case NodeState::FAULT:
+        if(!beeper_.active())
+            beeper_.beepFault(200);
+    case NodeState::OUTPUT_ENABLED:
         if(!button_.enabled()){ 
             changeNodeState(NodeState::LOW_POWER_TIMEOUT);
         }
@@ -85,6 +89,9 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok) {
             changeNodeState(NodeState::LOW_POWER_TIMEOUT);
         }
         break;
+    case NodeState::ID_ACQUISITION_WAIT:
+        if(button_.stateChanged())
+            changeNodeState(NodeState::ID_ACQUISITION_TAKE);
     default:
         //Do nothing!
         break;
@@ -124,6 +131,9 @@ void Battery_Node::changeNodeStateUnsafe(NodeState state){
         dsg_enable_ = false;
         chg_enable_ = false;
         led_.off();
+        button_.setMode(modules::Pushbutton_Controller::TOGGLE_MODE);
+        if(state_ != NodeState::LOW_POWER_SHUTDOWN)
+            beeper_.beepOnce(400);
 
         state_counter_ = 0;
         state_ = NodeState::LOW_POWER_TIMEOUT;
@@ -165,6 +175,7 @@ void Battery_Node::changeNodeStateUnsafe(NodeState state){
         dsg_enable_ = true;
         chg_enable_ = true;
         led_.green().fade();
+        beeper_.beepTwice();
 
         state_ = NodeState::OUTPUT_ENABLED;
         break;
@@ -173,6 +184,7 @@ void Battery_Node::changeNodeStateUnsafe(NodeState state){
         dsg_enable_ = false;
         chg_enable_ = true;
         led_.orange().blink();
+        beeper_.beepTwice();
 
         state_counter_ = 0;
         state_ = NodeState::CHARGE_ENABLED;
@@ -182,6 +194,7 @@ void Battery_Node::changeNodeStateUnsafe(NodeState state){
         dsg_enable_ = false;
         chg_enable_ = false;
         led_.green().blink();
+        beeper_.beepThrice();
 
         state_ = NodeState::CHARGE_TIMEOUT;
         break;
@@ -193,6 +206,8 @@ void Battery_Node::changeNodeStateUnsafe(NodeState state){
         dsg_enable_ = false;
         chg_enable_ = false;
         led_.blue().orange().blink();
+        button_.setMode(modules::Pushbutton_Controller::EDGE_DETECT_MODE);
+        button_.stateChanged(); //Clear edge detector
 
         state_ = NodeState::ID_ACQUISITION_WAIT;
         break;
@@ -203,6 +218,7 @@ void Battery_Node::changeNodeStateUnsafe(NodeState state){
         dsg_enable_ = false;
         chg_enable_ = false;
         led_.blue().orange().blinkFast();
+        button_.setMode(modules::Pushbutton_Controller::TOGGLE_MODE);
 
         state_ = NodeState::ID_ACQUISITION_TAKE;
         break;
@@ -214,6 +230,7 @@ void Battery_Node::changeNodeStateUnsafe(NodeState state){
         dsg_enable_ = false;
         chg_enable_ = false;
         led_.blue().fade();
+        button_.setMode(modules::Pushbutton_Controller::TOGGLE_MODE);
 
         state_ = NodeState::ID_ACQUISITION_DONE;
         break;

@@ -54,7 +54,7 @@ modules::LED_Controller status_led (rgb_led_driver);
 hardware::COMP_STM32L4 comp;
 hardware::ADC_control adc;
 
-modules::Pushbutton_Controller button (400 /*ms*/, 600 /*ms*/);
+modules::Pushbutton_Controller button (400 /*ms*/, 600 /*ms*/, 200 /*ms*/);
 
 hardware::Flash_STM32L4 database;
 
@@ -64,7 +64,7 @@ hardware::BQ34Z100_I2C battery_i2c(&I2CD1, I2C_BATTERY_CONFIG);
 std::vector<hardware::Driver *> drivers{&beeper_driver, &rgb_led_driver, &can, &battery_i2c, &comp, &adc};
 hardware::Power_Control power_ctrl(drivers);
 
-Battery_Node battery_node(database, status_led, button, can, power_ctrl);
+Battery_Node battery_node(database, status_led, button, beeper, can, power_ctrl);
 
 /**
  * @brief Initializes hal and ChibiOS
@@ -93,11 +93,11 @@ void __late_init() {
  */
 int main(void) {
 
-    if(!power_ctrl.wakeFromStandby()){
-        power_ctrl.enterStop2();
-    } else {
-        power_ctrl.clearStandby();
-    }
+    // if(!power_ctrl.wakeFromStandby()){
+    //     power_ctrl.enterStop2();
+    // } else {
+    //     power_ctrl.clearStandby();
+    // }
 
     rgb_led_driver.setColor(255,0,0);
     static uint16_t count = 0;
@@ -108,16 +108,6 @@ int main(void) {
         volatile float voltage_ext = adc.v_ext();
 
         button.update(palReadLine(LINE_PB_WKUP));
-
-        if(button.enabled()){
-            if(button.stateChanged()){
-                beeper.beepTwice();
-            }
-        } else {
-            if(button.stateChanged()){
-                beeper.beepOnce(400);
-            }
-        }
 
         battery_node.update(comp.output_comp1(), comp.output_comp2());
 

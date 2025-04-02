@@ -10,6 +10,7 @@
 #include "modules/LED_Controller.h"
 #include "modules/Pushbutton_Controller.h"
 #include "hardware/drivers/power_control.h"
+#include "modules/Beep_Controller.h"
 
 namespace hebi::firmware {
 
@@ -37,6 +38,7 @@ public:
     Battery_Node(hardware::Flash_Database& database, 
         modules::LED_Controller& led, 
         modules::Pushbutton_Controller& button_ctrl,
+        modules::Beep_Controller& beeper,
         hardware::Battery_Node_CAN& can_driver,
         hardware::Power_Control& power_ctrl);
 
@@ -44,6 +46,7 @@ public:
 
     bool chgEnable() { return chg_enable_; }
     bool dsgEnable() { return dsg_enable_; }
+    bool isFaulted() { return state_ == NodeState::FAULT; }
     
     void addTxMessage(protocol::base_msg msg) {
         if(!node_id_valid_) return;
@@ -94,6 +97,7 @@ protected:
 
     hardware::Flash_Database& database_;
     modules::LED_Controller& led_;
+    modules::Beep_Controller& beeper_;
     modules::Pushbutton_Controller& button_;
     hardware::Battery_Node_CAN& can_driver_;
     hardware::Power_Control& power_ctrl_;

@@ -12,8 +12,11 @@ namespace hebi::firmware::modules {
 
 class Pushbutton_Controller {
 public:
-    Pushbutton_Controller(uint16_t t_rising, uint16_t t_falling) :
-        t_rising_(t_rising), t_falling_(t_falling) {
+    static constexpr bool EDGE_DETECT_MODE = true;
+    static constexpr bool TOGGLE_MODE = false;
+
+    Pushbutton_Controller(uint16_t t_rising, uint16_t t_falling, uint16_t t_rising_edge) :
+        t_rising_(t_rising), t_falling_(t_falling), t_rising_edge_det_(t_rising_edge) {
 
     }
 
@@ -25,14 +28,16 @@ public:
             else
                 count_ = 0;
 
-            if(count_ == t_rising_){
+            if( (count_ == t_rising_ && !edge_detect_mode_) || 
+                (count_ == t_rising_edge_det_ && edge_detect_mode_)){
+
                 button_state_ = ButtonState::ENABLED_LOCKED;
                 state_changed_ = true;
             }
             break;
         case ButtonState::ENABLED_LOCKED:
             if(!button_input)
-                button_state_ = ButtonState::ENABLED;
+                button_state_ = (edge_detect_mode_) ? ButtonState::DISABLED : ButtonState::ENABLED;
 
             count_ = 0;
             break;
@@ -56,6 +61,8 @@ public:
 
         }
     }
+
+    void setMode(bool mode) { edge_detect_mode_ = mode; }
 
     bool enabled() {
         return button_state_ == ButtonState::ENABLED_LOCKED || button_state_ == ButtonState::ENABLED;
@@ -86,8 +93,10 @@ private:
     };
 
     const uint16_t t_rising_;
+    const uint16_t t_rising_edge_det_;
     const uint16_t t_falling_;
 
+    bool edge_detect_mode_ { TOGGLE_MODE };
     uint16_t count_ {0};
     ButtonState button_state_{ButtonState::DISABLED};
     bool state_changed_ {false};

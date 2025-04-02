@@ -35,6 +35,8 @@ void Beep_Controller::setCode(
     uint16_t on_4, uint16_t off_4, 
     uint16_t on_5, uint16_t off_5 ){
     
+    if(active()) return;
+    
     code_index_ = 0;
     code_length_ = 0;
     counter_ = 0;
