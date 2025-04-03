@@ -506,7 +506,7 @@
                                      PIN_ODR_HIGH(GPIOB_PIN2) |             \
                                      PIN_ODR_HIGH(GPIOB_SWO) |              \
                                      PIN_ODR_HIGH(GPIOB_VREV_SNS) |             \
-                                     PIN_ODR_HIGH(GPIOB_FAULT_RESET) |             \
+                                     PIN_ODR_LOW(GPIOB_FAULT_RESET) |             \
                                      PIN_ODR_HIGH(GPIOB_I2C1_SCL) |         \
                                      PIN_ODR_HIGH(GPIOB_I2C1_SDA) |         \
                                      PIN_ODR_HIGH(GPIOB_PIN8) |             \

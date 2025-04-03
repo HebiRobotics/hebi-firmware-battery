@@ -114,6 +114,8 @@ void Battery_Node::enterLowPowerMode(){
     changeNodeState(NodeState::LOW_POWER_SHUTDOWN);
 
     power_ctrl_.enterStop2();
+    led_.red();
+    led_.update();
 
     //We will resume from here upon wakeup from stop2
     changeNodeState(NodeState::LOW_POWER_TIMEOUT);
