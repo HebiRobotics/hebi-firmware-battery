@@ -1,5 +1,5 @@
 /**
- * Battery_Node_CAN.h
+ * Battery_CAN.h
  * 
  * 
 */
@@ -18,9 +18,9 @@ extern "C" {
 
 namespace hebi::firmware::hardware {
 
-class Battery_Node_CAN : public Driver, public protocol::CAN_driver {
+class Battery_CAN : public Driver, public protocol::CAN_driver {
 public:
-    Battery_Node_CAN();
+    Battery_CAN();
 
     void sendMessage(protocol::base_msg msg) override;
     std::optional<protocol::base_msg> getMessage() override;

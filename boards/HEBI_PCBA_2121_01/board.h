@@ -73,8 +73,8 @@
 #define GPIOA_PIN5                  5U
 #define GPIOA_SPKR_PWM              6U
 #define GPIOA_LED_G                 7U
-#define GPIOA_CHG_EN             8U
-#define GPIOA_DSG_EN                  9U
+#define GPIOA_DSG_EN             8U
+#define GPIOA_CHG_EN                  9U
 #define GPIOA_CAN1_SHDN             10U
 #define GPIOA_CAN1_RX               11U
 #define GPIOA_CAN1_TX               12U
@@ -209,8 +209,8 @@
 #define LINE_PB_WKUP                  PAL_LINE(GPIOA, 2U)
 #define LINE_SPKR_PWM                 PAL_LINE(GPIOA, 6U)
 #define LINE_LED_G                    PAL_LINE(GPIOA, 7U)
-#define LINE_CHG_EN                   PAL_LINE(GPIOA, 8U)
-#define LINE_DSG_EN                   PAL_LINE(GPIOA, 9U)
+#define LINE_DSG_EN                   PAL_LINE(GPIOA, 8U)
+#define LINE_CHG_EN                   PAL_LINE(GPIOA, 9U)
 #define LINE_CAN1_SHDN                PAL_LINE(GPIOA, 10U)
 #define LINE_CAN1_RX                  PAL_LINE(GPIOA, 11U)
 #define LINE_CAN1_TX                  PAL_LINE(GPIOA, 12U)
@@ -296,8 +296,8 @@
                                      PIN_MODE_ANALOG(GPIOA_PIN5) |          \
                                      PIN_MODE_ALTERNATE(GPIOA_SPKR_PWM) |   \
                                      PIN_MODE_ALTERNATE(GPIOA_LED_G) |      \
-                                     PIN_MODE_OUTPUT(GPIOA_CHG_EN) |     \
-                                     PIN_MODE_OUTPUT(GPIOA_DSG_EN) |          \
+                                     PIN_MODE_OUTPUT(GPIOA_DSG_EN) |     \
+                                     PIN_MODE_OUTPUT(GPIOA_CHG_EN) |          \
                                      PIN_MODE_OUTPUT(GPIOA_CAN1_SHDN) |     \
                                      PIN_MODE_ALTERNATE(GPIOA_CAN1_RX) |    \
                                      PIN_MODE_ALTERNATE(GPIOA_CAN1_TX) |    \
@@ -312,8 +312,8 @@
                                      PIN_OTYPE_PUSHPULL(GPIOA_PIN5) |       \
                                      PIN_OTYPE_PUSHPULL(GPIOA_SPKR_PWM) |   \
                                      PIN_OTYPE_PUSHPULL(GPIOA_LED_G) |      \
-                                     PIN_OTYPE_PUSHPULL(GPIOA_CHG_EN) |  \
-                                     PIN_OTYPE_PUSHPULL(GPIOA_DSG_EN) |       \
+                                     PIN_OTYPE_PUSHPULL(GPIOA_DSG_EN) |  \
+                                     PIN_OTYPE_PUSHPULL(GPIOA_CHG_EN) |       \
                                      PIN_OTYPE_PUSHPULL(GPIOA_CAN1_SHDN) |  \
                                      PIN_OTYPE_PUSHPULL(GPIOA_CAN1_RX) |    \
                                      PIN_OTYPE_PUSHPULL(GPIOA_CAN1_TX) |    \
@@ -328,8 +328,8 @@
                                      PIN_OSPEED_HIGH(GPIOA_PIN5) |          \
                                      PIN_OSPEED_HIGH(GPIOA_SPKR_PWM) |      \
                                      PIN_OSPEED_HIGH(GPIOA_LED_G) |         \
-                                     PIN_OSPEED_HIGH(GPIOA_CHG_EN) |     \
-                                     PIN_OSPEED_HIGH(GPIOA_DSG_EN) |          \
+                                     PIN_OSPEED_HIGH(GPIOA_DSG_EN) |     \
+                                     PIN_OSPEED_HIGH(GPIOA_CHG_EN) |          \
                                      PIN_OSPEED_HIGH(GPIOA_CAN1_SHDN) |     \
                                      PIN_OSPEED_HIGH(GPIOA_CAN1_RX) |       \
                                      PIN_OSPEED_HIGH(GPIOA_CAN1_TX) |       \
@@ -344,8 +344,8 @@
                                      PIN_PUPDR_FLOATING(GPIOA_PIN5) |       \
                                      PIN_PUPDR_FLOATING(GPIOA_SPKR_PWM) |   \
                                      PIN_PUPDR_FLOATING(GPIOA_LED_G) |      \
-                                     PIN_PUPDR_FLOATING(GPIOA_CHG_EN) |  \
-                                     PIN_PUPDR_FLOATING(GPIOA_DSG_EN) |       \
+                                     PIN_PUPDR_FLOATING(GPIOA_DSG_EN) |  \
+                                     PIN_PUPDR_FLOATING(GPIOA_CHG_EN) |       \
                                      PIN_PUPDR_FLOATING(GPIOA_CAN1_SHDN) |  \
                                      PIN_PUPDR_FLOATING(GPIOA_CAN1_RX) |    \
                                      PIN_PUPDR_FLOATING(GPIOA_CAN1_TX) |    \
@@ -360,8 +360,8 @@
                                      PIN_ODR_HIGH(GPIOA_PIN5) |             \
                                      PIN_ODR_HIGH(GPIOA_SPKR_PWM) |         \
                                      PIN_ODR_HIGH(GPIOA_LED_G) |            \
-                                     PIN_ODR_LOW(GPIOA_CHG_EN) |         \
-                                     PIN_ODR_LOW(GPIOA_DSG_EN) |             \
+                                     PIN_ODR_LOW(GPIOA_DSG_EN) |         \
+                                     PIN_ODR_LOW(GPIOA_CHG_EN) |             \
                                      PIN_ODR_HIGH(GPIOA_CAN1_SHDN) |        \
                                      PIN_ODR_HIGH(GPIOA_CAN1_RX) |          \
                                      PIN_ODR_HIGH(GPIOA_CAN1_TX) |          \
@@ -376,8 +376,8 @@
                                      PIN_AFIO_AF(GPIOA_PIN5, 0U) |          \
                                      PIN_AFIO_AF(GPIOA_SPKR_PWM, 14U) |     \
                                      PIN_AFIO_AF(GPIOA_LED_G, 1U))
-#define VAL_GPIOA_AFRH              (PIN_AFIO_AF(GPIOA_CHG_EN, 0U) |     \
-                                     PIN_AFIO_AF(GPIOA_DSG_EN, 0U) |          \
+#define VAL_GPIOA_AFRH              (PIN_AFIO_AF(GPIOA_DSG_EN, 0U) |     \
+                                     PIN_AFIO_AF(GPIOA_CHG_EN, 0U) |          \
                                      PIN_AFIO_AF(GPIOA_CAN1_SHDN, 0U) |     \
                                      PIN_AFIO_AF(GPIOA_CAN1_RX, 9U) |       \
                                      PIN_AFIO_AF(GPIOA_CAN1_TX, 9U) |       \
@@ -392,8 +392,8 @@
                                      PIN_ASCR_DISABLED(GPIOA_PIN5) |        \
                                      PIN_ASCR_DISABLED(GPIOA_SPKR_PWM) |    \
                                      PIN_ASCR_DISABLED(GPIOA_LED_G) |       \
-                                     PIN_ASCR_DISABLED(GPIOA_CHG_EN) |   \
-                                     PIN_ASCR_DISABLED(GPIOA_DSG_EN) |        \
+                                     PIN_ASCR_DISABLED(GPIOA_DSG_EN) |   \
+                                     PIN_ASCR_DISABLED(GPIOA_CHG_EN) |        \
                                      PIN_ASCR_DISABLED(GPIOA_CAN1_SHDN) |   \
                                      PIN_ASCR_DISABLED(GPIOA_CAN1_RX) |     \
                                      PIN_ASCR_DISABLED(GPIOA_CAN1_TX) |     \
@@ -408,8 +408,8 @@
                                      PIN_LOCKR_DISABLED(GPIOA_PIN5) |       \
                                      PIN_LOCKR_DISABLED(GPIOA_SPKR_PWM) |   \
                                      PIN_LOCKR_DISABLED(GPIOA_LED_G) |      \
-                                     PIN_LOCKR_DISABLED(GPIOA_CHG_EN) |  \
-                                     PIN_LOCKR_DISABLED(GPIOA_DSG_EN) |       \
+                                     PIN_LOCKR_DISABLED(GPIOA_DSG_EN) |  \
+                                     PIN_LOCKR_DISABLED(GPIOA_CHG_EN) |       \
                                      PIN_LOCKR_DISABLED(GPIOA_CAN1_SHDN) |  \
                                      PIN_LOCKR_DISABLED(GPIOA_CAN1_RX) |    \
                                      PIN_LOCKR_DISABLED(GPIOA_CAN1_TX) |    \

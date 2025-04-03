@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "hardware/drivers/battery_node_CAN.h"
+#include "hardware/drivers/Battery_CAN.h"
 #include "can-proto/driver/base_node.h"
 #include "hardware/Flash_Database.h"
 #include "modules/LED_Controller.h"
@@ -55,7 +55,7 @@ public:
     }
 
     bool shouldSendBatteryData(){
-        return send_battery_data_;
+        return send_battery_data_ && node_id_ != protocol::DEFAULT_NODE_ID;
     }
 
     uint8_t nodeID(){

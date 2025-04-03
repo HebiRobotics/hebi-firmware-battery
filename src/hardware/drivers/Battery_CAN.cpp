@@ -1,23 +1,23 @@
 /**
- * Battery_Node_CAN.cpp
+ * Battery_CAN.cpp
  * 
  * 
 */
 
-#include "battery_node_CAN.h"
+#include "Battery_CAN.h"
 #include "board.h"
 #include "all_msg.h"
 
 namespace hebi::firmware::hardware {
 
-// static Battery_Node_CAN *driver = nullptr;
+// static Battery_CAN *driver = nullptr;
 
 /*
  * Internal loopback mode, 500KBaud, automatic wakeup, automatic recover
  * from abort mode.
  * See section 42.7.7 on the STM32 reference manual.
  */
-CANConfig Battery_Node_CAN::cancfg_ = {
+CANConfig Battery_CAN::cancfg_ = {
     .mcr =  //CAN_MCR_NART | //No Auto retry
             CAN_MCR_ABOM | //Auto bus-off management
             CAN_MCR_AWUM | //Auto wake-up mode
@@ -29,15 +29,15 @@ CANConfig Battery_Node_CAN::cancfg_ = {
             CAN_BTR_BRP(10)    //Baud rate = APB1 / BRP
 };
 
-util::LF_RingBuffer<protocol::base_msg, 5> Battery_Node_CAN::rx_buffer_;
-util::LF_RingBuffer<protocol::base_msg, 5> Battery_Node_CAN::tx_buffer_;
+util::LF_RingBuffer<protocol::base_msg, 5> Battery_CAN::rx_buffer_;
+util::LF_RingBuffer<protocol::base_msg, 5> Battery_CAN::tx_buffer_;
 
 /*
 * Receiver thread.
 */
-thread_t *Battery_Node_CAN::can_rx_thread_ {nullptr};
-THD_WORKING_AREA(Battery_Node_CAN::can_rx1_wa, 256);
-THD_FUNCTION(Battery_Node_CAN::can_rx_thd_fn, p) {
+thread_t *Battery_CAN::can_rx_thread_ {nullptr};
+THD_WORKING_AREA(Battery_CAN::can_rx1_wa, 256);
+THD_FUNCTION(Battery_CAN::can_rx_thd_fn, p) {
     CANDriver *canp = (CANDriver *)p;
     event_listener_t el;
     CANRxFrame rxmsg;
@@ -63,9 +63,9 @@ THD_FUNCTION(Battery_Node_CAN::can_rx_thd_fn, p) {
 
 #define CAN_TX_MSG_EVENT_MASK EVENT_MASK(0)
 
-thread_t *Battery_Node_CAN::can_tx_thread_ {nullptr};
-THD_WORKING_AREA(Battery_Node_CAN::can_tx_wa, 256);
-THD_FUNCTION(Battery_Node_CAN::can_tx_thd_fn, p) {
+thread_t *Battery_CAN::can_tx_thread_ {nullptr};
+THD_WORKING_AREA(Battery_CAN::can_tx_wa, 256);
+THD_FUNCTION(Battery_CAN::can_tx_thd_fn, p) {
     
     // event_listener_t tx_msg_listener;
     CANTxFrame txmsg;
@@ -104,7 +104,7 @@ THD_FUNCTION(Battery_Node_CAN::can_tx_thd_fn, p) {
 }
 
 
-Battery_Node_CAN::Battery_Node_CAN() {
+Battery_CAN::Battery_CAN() {
     // driver = this;
 
     startDriver();
@@ -112,29 +112,29 @@ Battery_Node_CAN::Battery_Node_CAN() {
     /*
     * Starting the transmitter and receiver threads.
     */
-    Battery_Node_CAN::can_rx_thread_ = 
+    Battery_CAN::can_rx_thread_ = 
         chThdCreateStatic(can_rx1_wa, sizeof(can_rx1_wa), 
         NORMALPRIO + 7, can_rx_thd_fn, &CAND1);
-    Battery_Node_CAN::can_tx_thread_ = 
+    Battery_CAN::can_tx_thread_ = 
         chThdCreateStatic(can_tx_wa, sizeof(can_tx_wa), 
         NORMALPRIO + 7, can_tx_thd_fn, NULL);
 }
 
-void Battery_Node_CAN::startDriver() {
+void Battery_CAN::startDriver() {
     palWriteLine(LINE_CAN1_STB, PAL_LOW);
     palWriteLine(LINE_CAN1_SHDN, PAL_LOW);
     
     canStart(&CAND1, &cancfg_);
 }
 
-void Battery_Node_CAN::stopDriver() {
+void Battery_CAN::stopDriver() {
     palWriteLine(LINE_CAN1_STB, PAL_HIGH);
     palWriteLine(LINE_CAN1_SHDN, PAL_HIGH);
     
     canStop(&CAND1);
 }
    
-void Battery_Node_CAN::sendMessage(protocol::base_msg msg){
+void Battery_CAN::sendMessage(protocol::base_msg msg){
     tx_buffer_.add(msg);
 
     if(can_tx_thread_ != NULL){    
@@ -142,7 +142,7 @@ void Battery_Node_CAN::sendMessage(protocol::base_msg msg){
     }
 }
 
-std::optional<protocol::base_msg> Battery_Node_CAN::getMessage(){
+std::optional<protocol::base_msg> Battery_CAN::getMessage(){
     return rx_buffer_.take();
 }
     
