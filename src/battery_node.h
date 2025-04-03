@@ -39,7 +39,7 @@ public:
         modules::LED_Controller& led, 
         modules::Pushbutton_Controller& button_ctrl,
         modules::Beep_Controller& beeper,
-        hardware::Battery_Node_CAN& can_driver,
+        protocol::CAN_driver& can_driver,
         hardware::Power_Control& power_ctrl);
 
     void update(bool chg_detect, bool polarity_ok);
@@ -99,7 +99,7 @@ protected:
     modules::LED_Controller& led_;
     modules::Beep_Controller& beeper_;
     modules::Pushbutton_Controller& button_;
-    hardware::Battery_Node_CAN& can_driver_;
+    protocol::CAN_driver& can_driver_;
     hardware::Power_Control& power_ctrl_;
     
     // uint8_t counter_ {0};

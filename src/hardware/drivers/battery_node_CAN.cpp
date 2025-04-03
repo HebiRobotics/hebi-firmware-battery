@@ -141,5 +141,9 @@ void Battery_Node_CAN::sendMessage(protocol::base_msg msg){
         chEvtSignal(can_tx_thread_, CAN_TX_MSG_EVENT_MASK);
     }
 }
+
+std::optional<protocol::base_msg> Battery_Node_CAN::getMessage(){
+    return rx_buffer_.take();
+}
     
 } //namespace hebi::firmware::hardware

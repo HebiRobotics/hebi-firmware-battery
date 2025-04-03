@@ -11,7 +11,7 @@ Battery_Node::Battery_Node(hardware::Flash_Database& database,
     modules::LED_Controller& led, 
     modules::Pushbutton_Controller& button_ctrl,
     modules::Beep_Controller& beeper,
-    hardware::Battery_Node_CAN& can_driver,
+    protocol::CAN_driver& can_driver,
     hardware::Power_Control& power_ctrl) :
     database_(database), led_(led), button_(button_ctrl), beeper_(beeper),
     can_driver_(can_driver), power_ctrl_(power_ctrl) {

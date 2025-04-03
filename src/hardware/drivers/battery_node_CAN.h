@@ -8,7 +8,7 @@
 
 #include "all_msg.h"
 #include "Driver.h"
-#include "driver/LockFreeRingBuffer.h"
+#include "driver/can_driver.h"
 
 extern "C" {
 #include <ch.h>
@@ -18,12 +18,12 @@ extern "C" {
 
 namespace hebi::firmware::hardware {
 
-class Battery_Node_CAN : public Driver {
+class Battery_Node_CAN : public Driver, public protocol::CAN_driver {
 public:
     Battery_Node_CAN();
 
-    void sendMessage(protocol::base_msg msg);
-    std::optional<protocol::base_msg> getMessage() { return rx_buffer_.take(); }
+    void sendMessage(protocol::base_msg msg) override;
+    std::optional<protocol::base_msg> getMessage() override;
 
     void startDriver() override;
     void stopDriver() override;
