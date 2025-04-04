@@ -99,8 +99,6 @@ int main(void) {
     //     power_ctrl.clearStandby();
     // }
 
-    // chThdSleepMilliseconds(1000);
-
     rgb_led_driver.setColor(255,0,0);
     static uint16_t count = 0;
 

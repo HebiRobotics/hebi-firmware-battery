@@ -46,16 +46,13 @@ void Power_Control::clearStandby(){
     PWR->CR3 &= ~PWR_CR3_APC; //Clear pullup config
 }
 
+//Note - must be woken up to start debugger
 void Power_Control::enterStop2(){
 
     stopDrivers();
 
     PWR->PUCRA |= (PWR_PUCRA_PA10 | PWR_PUCRA_PA15); //Pullup on CAN control pins
     PWR->PDCRH |= (PWR_PDCRH_PH3);
-
-    PWR->CR3 &= ~PWR_CR3_EWUP4; //Clear wakeup enable
-    PWR->SCR |= PWR_SCR_CWUF; //Clear wakeup flags
-    PWR->CR3 |= (PWR_CR3_EWUP4 | PWR_CR3_APC); //Enable wakeup pin and pullups
 
     extiEnableLine(COMP1_OUTPUT, EXTI_MODE_RISING_EDGE | EXTI_MODE_ACTION_EVENT); //Enable EXTI for COMP 1
 
