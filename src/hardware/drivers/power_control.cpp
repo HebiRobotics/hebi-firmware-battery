@@ -20,6 +20,8 @@ Power_Control::Power_Control(std::vector<Driver *>& drivers) :
 }
     
 void Power_Control::startDrivers(){
+    stm32_gpio_init();
+
     for (auto driver : drivers_){
         if(driver) //We shouldn't ever get a NULL here... but just in case
             driver->startDriver();
@@ -31,6 +33,8 @@ void Power_Control::stopDrivers(){
         if(driver) //We shouldn't ever get a NULL here... but just in case
             driver->stopDriver();
     }
+
+    stm32_gpio_lp_init();
 }
 
 bool Power_Control::wakeFromStandby(){

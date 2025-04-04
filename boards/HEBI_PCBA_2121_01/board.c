@@ -21,6 +21,7 @@
 
 #include "hal.h"
 #include "stm32_gpio.h"
+#include "board_lp.h"
 
 /*===========================================================================*/
 /* Driver local definitions.                                                 */
@@ -149,6 +150,69 @@ static const gpio_config_t gpio_default_config = {
 #endif
 };
 
+
+/**
+ * @brief   STM32 GPIO low power mode static initialization data.
+ */
+static const gpio_config_t gpio_lp_config = {
+  #if STM32_HAS_GPIOA
+    {VAL_GPIOA_LP_MODER, VAL_GPIOA_LP_OTYPER, VAL_GPIOA_LP_OSPEEDR, VAL_GPIOA_LP_PUPDR,
+     VAL_GPIOA_LP_ODR,   VAL_GPIOA_LP_AFRL,   VAL_GPIOA_LP_AFRH,    VAL_GPIOA_LP_ASCR,
+     VAL_GPIOA_LP_LOCKR},
+  #endif
+  #if STM32_HAS_GPIOB
+    {VAL_GPIOB_LP_MODER, VAL_GPIOB_LP_OTYPER, VAL_GPIOB_LP_OSPEEDR, VAL_GPIOB_LP_PUPDR,
+     VAL_GPIOB_LP_ODR,   VAL_GPIOB_LP_AFRL,   VAL_GPIOB_LP_AFRH,    VAL_GPIOB_LP_ASCR,
+     VAL_GPIOB_LP_LOCKR},
+  #endif
+  #if STM32_HAS_GPIOC
+    {VAL_GPIOC_LP_MODER, VAL_GPIOC_LP_OTYPER, VAL_GPIOC_LP_OSPEEDR, VAL_GPIOC_LP_PUPDR,
+     VAL_GPIOC_LP_ODR,   VAL_GPIOC_LP_AFRL,   VAL_GPIOC_LP_AFRH,    VAL_GPIOC_LP_ASCR,
+     VAL_GPIOC_LP_LOCKR},
+  #endif
+  #if STM32_HAS_GPIOD
+    {VAL_GPIOD_LP_MODER, VAL_GPIOD_LP_OTYPER, VAL_GPIOD_LP_OSPEEDR, VAL_GPIOD_LP_PUPDR,
+     VAL_GPIOD_LP_ODR,   VAL_GPIOD_LP_AFRL,   VAL_GPIOD_LP_AFRH,    VAL_GPIOD_LP_ASCR,
+     VAL_GPIOD_LP_LOCKR},
+  #endif
+  #if STM32_HAS_GPIOE
+    {VAL_GPIOE_LP_MODER, VAL_GPIOE_LP_OTYPER, VAL_GPIOE_LP_OSPEEDR, VAL_GPIOE_LP_PUPDR,
+     VAL_GPIOE_LP_ODR,   VAL_GPIOE_LP_AFRL,   VAL_GPIOE_LP_AFRH,    VAL_GPIOE_LP_ASCR,
+     VAL_GPIOE_LP_LOCKR},
+  #endif
+  #if STM32_HAS_GPIOF
+    {VAL_GPIOF_LP_MODER, VAL_GPIOF_LP_OTYPER, VAL_GPIOF_LP_OSPEEDR, VAL_GPIOF_LP_PUPDR,
+     VAL_GPIOF_LP_ODR,   VAL_GPIOF_LP_AFRL,   VAL_GPIOF_LP_AFRH,    VAL_GPIOF_LP_ASCR,
+     VAL_GPIOF_LP_LOCKR},
+  #endif
+  #if STM32_HAS_GPIOG
+    {VAL_GPIOG_LP_MODER, VAL_GPIOG_LP_OTYPER, VAL_GPIOG_LP_OSPEEDR, VAL_GPIOG_LP_PUPDR,
+     VAL_GPIOG_LP_ODR,   VAL_GPIOG_LP_AFRL,   VAL_GPIOG_LP_AFRH,    VAL_GPIOG_LP_ASCR,
+     VAL_GPIOG_LP_LOCKR},
+  #endif
+  #if STM32_HAS_GPIOH
+    {VAL_GPIOH_LP_MODER, VAL_GPIOH_LP_OTYPER, VAL_GPIOH_LP_OSPEEDR, VAL_GPIOH_LP_PUPDR,
+     VAL_GPIOH_LP_ODR,   VAL_GPIOH_LP_AFRL,   VAL_GPIOH_LP_AFRH,    VAL_GPIOH_LP_ASCR,
+     VAL_GPIOH_LP_LOCKR},
+  #endif
+  #if STM32_HAS_GPIOI
+    {VAL_GPIOI_LP_MODER, VAL_GPIOI_LP_OTYPER, VAL_GPIOI_LP_OSPEEDR, VAL_GPIOI_LP_PUPDR,
+     VAL_GPIOI_LP_ODR,   VAL_GPIOI_LP_AFRL,   VAL_GPIOI_LP_AFRH,    VAL_GPIOI_LP_ASCR,
+     VAL_GPIOI_LP_LOCKR},
+  #endif
+  #if STM32_HAS_GPIOJ
+    {VAL_GPIOJ_LP_MODER, VAL_GPIOJ_LP_OTYPER, VAL_GPIOJ_LP_OSPEEDR, VAL_GPIOJ_LP_PUPDR,
+     VAL_GPIOJ_LP_ODR,   VAL_GPIOJ_LP_AFRL,   VAL_GPIOJ_LP_AFRH,    VAL_GPIOJ_LP_ASCR,
+     VAL_GPIOJ_LP_LOCKR},
+  #endif
+  #if STM32_HAS_GPIOK
+    {VAL_GPIOK_LP_MODER, VAL_GPIOK_LP_OTYPER, VAL_GPIOK_LP_OSPEEDR, VAL_GPIOK_LP_PUPDR,
+     VAL_GPIOK_LP_ODR,   VAL_GPIOK_LP_AFRL,   VAL_GPIOK_LP_AFRH,    VAL_GPIOK_LP_ASCR,
+     VAL_GPIOK_LP_LOCKR}
+  #endif
+};
+
+
 /*===========================================================================*/
 /* Driver local functions.                                                   */
 /*===========================================================================*/
@@ -166,7 +230,7 @@ static void gpio_init(stm32_gpio_t *gpiop, const gpio_setup_t *config) {
   gpiop->LOCKR   = config->lockr;
 }
 
-static void stm32_gpio_init(void) {
+void stm32_gpio_init(void) {
 
   /* Enabling GPIO-related clocks, the mask comes from the
      registry header file.*/
@@ -206,6 +270,49 @@ static void stm32_gpio_init(void) {
 #endif
 #if STM32_HAS_GPIOK
   gpio_init(GPIOK, &gpio_default_config.PKData);
+#endif
+}
+
+void stm32_gpio_lp_init(void) {
+
+  /* Enabling GPIO-related clocks, the mask comes from the
+     registry header file.*/
+  rccResetAHB2(STM32_GPIO_EN_MASK);
+  rccEnableAHB2(STM32_GPIO_EN_MASK, true);
+
+  /* Initializing all the defined GPIO ports.*/
+#if STM32_HAS_GPIOA
+  gpio_init(GPIOA, &gpio_lp_config.PAData);
+#endif
+#if STM32_HAS_GPIOB
+  gpio_init(GPIOB, &gpio_lp_config.PBData);
+#endif
+#if STM32_HAS_GPIOC
+  gpio_init(GPIOC, &gpio_lp_config.PCData);
+#endif
+#if STM32_HAS_GPIOD
+  gpio_init(GPIOD, &gpio_lp_config.PDData);
+#endif
+#if STM32_HAS_GPIOE
+  gpio_init(GPIOE, &gpio_lp_config.PEData);
+#endif
+#if STM32_HAS_GPIOF
+  gpio_init(GPIOF, &gpio_lp_config.PFData);
+#endif
+#if STM32_HAS_GPIOG
+  gpio_init(GPIOG, &gpio_lp_config.PGData);
+#endif
+#if STM32_HAS_GPIOH
+  gpio_init(GPIOH, &gpio_lp_config.PHData);
+#endif
+#if STM32_HAS_GPIOI
+  gpio_init(GPIOI, &gpio_lp_config.PIData);
+#endif
+#if STM32_HAS_GPIOJ
+  gpio_init(GPIOJ, &gpio_lp_config.PJData);
+#endif
+#if STM32_HAS_GPIOK
+  gpio_init(GPIOK, &gpio_lp_config.PKData);
 #endif
 }
 
