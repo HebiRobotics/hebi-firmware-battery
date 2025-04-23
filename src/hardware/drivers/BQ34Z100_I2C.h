@@ -11,6 +11,7 @@ struct battery_data {
     uint16_t soc {0};
     uint16_t capacity_remaining {0};
     uint16_t capacity_full {0};
+    uint16_t temperature {0};
 };
 
 class BQ34Z100_I2C : public Driver {
@@ -46,6 +47,7 @@ private:
     static const uint8_t SOC_REG = 0x02; //1 word wide
     static const uint8_t CAP_REM_REG = 0x04; //2 word wide
     static const uint8_t CAP_FUL_REG = 0x06; //2 word wide
+    static const uint8_t TEMP_REG = 0x0C; //2 word wide
 
     bool has_data_ {false};
     battery_data data_{};

@@ -12,9 +12,10 @@ Battery_Node::Battery_Node(hardware::Flash_Database& database,
     modules::Pushbutton_Controller& button_ctrl,
     modules::Beep_Controller& beeper,
     protocol::CAN_driver& can_driver,
+    hardware::BQ34Z100_I2C& bat_i2c,
     hardware::Power_Control& power_ctrl) :
     database_(database), led_(led), button_(button_ctrl), beeper_(beeper),
-    can_driver_(can_driver), power_ctrl_(power_ctrl) {
+    can_driver_(can_driver), bat_i2c_(bat_i2c), power_ctrl_(power_ctrl) {
     
     initNodeID();
     changeNodeStateUnsafe(NodeState::LOW_POWER_TIMEOUT);
@@ -33,12 +34,35 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok, float v_bat, float 
     while(has_data){
         auto msg_opt = can_driver_.getMessage();
         if(msg_opt.has_value()){
-            msg_recvd |= tryParseMsg(msg_opt.value());
+            //Msg_recvd should only be set to true if we receive a valid message from the base node
+            msg_recvd |= (tryParseMsg(msg_opt.value()) && msg_opt.value().EID.node_id == 0x00);
         } else {
             has_data = false;
         }
 
     }
+
+    last_battery_data_counter_++;
+
+    //Update with latest fuel gauge data
+    if(bat_i2c_.hasData()){
+        last_battery_data_ = bat_i2c_.getData();
+        last_battery_data_counter_ = 0;
+
+        //If we should be sending data, broadcast it
+        if(send_battery_data_ && node_id_ != protocol::DEFAULT_NODE_ID)
+            can_driver_.sendMessage( protocol::battery_state_msg(
+                node_id_, 
+                last_battery_data_.voltage, 
+                last_battery_data_.current, 
+                last_battery_data_.soc, 
+                last_battery_data_.temperature
+            ));
+    } else if (last_battery_data_counter_ > BATTERY_DATA_TIMEOUT_MS){
+        last_battery_data_ = {};
+    }
+
+    //TODO: Battery undervoltage detection
 
     switch(state_){
     case NodeState::LOW_POWER_TIMEOUT:
@@ -76,20 +100,53 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok, float v_bat, float 
         }
         break;
     case NodeState::CHARGE_ENABLED:
-        state_counter_++;
+        if(last_battery_data_.current < CHARGE_CURRENT_FIN_THR)
+            state_counter_++;
+        else
+            state_counter_ = 0;
 
         if(button_.enabled()){ 
             changeNodeState(NodeState::OUTPUT_ENABLED);
-        } else if(v_ext < CHARGE_LOW_THR) {
+        } else if(v_ext < CHARGE_VOLTAGE_LOW_THR) {
             changeNodeState(NodeState::LOW_POWER_TIMEOUT);
-        } else if (state_counter_ == CHARGE_TIMEOUT_MS) {
-            changeNodeState(NodeState::CHARGE_TIMEOUT);
+        } else if (state_counter_ >= CHARGE_PRES_TIMEOUT_MS) {
+            /* If current has dropped low for at least CHARGE_PRES_TIMEOUT_MS, 
+                try to figure out if the battery is fully charged*/
+            if(last_battery_data_.voltage >= CHARGE_FIN_VOLTAGE_THR)
+                changeNodeState(NodeState::CHARGE_FINISHED);
+            else
+                changeNodeState(NodeState::CHARGE_PRESENT);
         }
         break;
-    case NodeState::CHARGE_TIMEOUT:
+    case NodeState::CHARGE_PRESENT:
+        if(last_battery_data_.current < CHARGE_CURRENT_FIN_THR)
+            state_counter_++;
+        else
+            state_counter_ = 0;
+        
         if(button_.enabled()){ 
             changeNodeState(NodeState::OUTPUT_ENABLED);
-        } else if(v_ext < CHARGE_LOW_THR) {
+        } else if(v_ext < CHARGE_VOLTAGE_LOW_THR) {
+            changeNodeState(NodeState::LOW_POWER_TIMEOUT);
+        } else if (last_battery_data_.current >= CHARGE_CURRENT_START_THR) {
+            changeNodeState(NodeState::CHARGE_ENABLED);
+        } else if (state_counter_ >= CHARGE_FIN_TIMEOUT_MS) {
+            changeNodeState(NodeState::LOW_POWER_TIMEOUT);
+        }
+        break;
+    case NodeState::CHARGE_FINISHED:
+        if(last_battery_data_.current < CHARGE_CURRENT_FIN_THR)
+            state_counter_++;
+        else
+            state_counter_ = 0;
+        
+        if(button_.enabled()){ 
+            changeNodeState(NodeState::OUTPUT_ENABLED);
+        } else if(v_ext < CHARGE_VOLTAGE_LOW_THR) {
+            changeNodeState(NodeState::LOW_POWER_TIMEOUT);
+        } else if (last_battery_data_.current >= CHARGE_CURRENT_START_THR) {
+            changeNodeState(NodeState::CHARGE_ENABLED);
+        } else if (state_counter_ >= CHARGE_FIN_TIMEOUT_MS) {
             changeNodeState(NodeState::LOW_POWER_TIMEOUT);
         }
         break;
@@ -189,20 +246,30 @@ void Battery_Node::changeNodeStateUnsafe(NodeState state){
     case NodeState::CHARGE_ENABLED: {
         dsg_enable_ = false;
         chg_enable_ = true;
-        led_.orange().blink();
+        led_.orange().blinkFast();
         beeper_.beepTwice();
 
         state_counter_ = 0;
         state_ = NodeState::CHARGE_ENABLED;
         break;
     }
-    case NodeState::CHARGE_TIMEOUT: {
+    case NodeState::CHARGE_PRESENT: {
         dsg_enable_ = false;
-        chg_enable_ = false;
+        chg_enable_ = true;
+        led_.orange().blink();
+
+        state_counter_ = 0;
+        state_ = NodeState::CHARGE_PRESENT;
+        break;
+    }
+    case NodeState::CHARGE_FINISHED: {
+        dsg_enable_ = false;
+        chg_enable_ = true;
         led_.green().blink();
         beeper_.beepThrice();
 
-        state_ = NodeState::CHARGE_TIMEOUT;
+        state_counter_ = 0;
+        state_ = NodeState::CHARGE_FINISHED;
         break;
     }
     /* CAN Special States */

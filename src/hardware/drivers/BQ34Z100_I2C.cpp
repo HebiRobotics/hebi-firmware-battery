@@ -88,6 +88,7 @@ void BQ34Z100_I2C::update(){
     success &= readRegister2(CURRENT_REG, (uint16_t &)tmp.current);
     success &= readRegister2(CAP_REM_REG, tmp.capacity_remaining);
     success &= readRegister2(CAP_FUL_REG, tmp.capacity_full);
+    success &= readRegister2(TEMP_REG, tmp.temperature);
 
     if(success){
         chSysLock();

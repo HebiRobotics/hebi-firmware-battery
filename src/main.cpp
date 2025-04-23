@@ -64,7 +64,7 @@ hardware::BQ34Z100_I2C battery_i2c(&I2CD1, I2C_BATTERY_CONFIG);
 std::vector<hardware::Driver *> drivers{&beeper_driver, &rgb_led_driver, &can, &battery_i2c, &comp, &adc};
 hardware::Power_Control power_ctrl(drivers);
 
-Battery_Node battery_node(database, status_led, button, beeper, can, power_ctrl);
+Battery_Node battery_node(database, status_led, button, beeper, can, battery_i2c, power_ctrl);
 
 /**
  * @brief Initializes hal and ChibiOS
@@ -100,7 +100,6 @@ int main(void) {
     // }
 
     rgb_led_driver.setColor(255,0,0);
-    static uint16_t count = 0;
 
     while (true) {
 
@@ -113,12 +112,6 @@ int main(void) {
 
         palWriteLine(LINE_DSG_EN, battery_node.dsgEnable());
         palWriteLine(LINE_CHG_EN, battery_node.chgEnable());
-
-        if(battery_i2c.hasData() && battery_node.shouldSendBatteryData()){
-            auto data = battery_i2c.getData();
-            protocol::battery_state_msg msg(battery_node.nodeID(), data.voltage, data.current, data.capacity_remaining, data.capacity_full);
-            can.sendMessage(msg);
-        }
 
         chThdSleepMilliseconds(1);
     }

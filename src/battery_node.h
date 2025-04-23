@@ -5,12 +5,15 @@
 #pragma once
 
 #include "hardware/drivers/Battery_CAN.h"
-#include "can-proto/driver/base_node.h"
+#include "hardware/drivers/power_control.h"
 #include "hardware/Flash_Database.h"
+#include "hardware/drivers/BQ34Z100_I2C.h"
+
 #include "modules/LED_Controller.h"
 #include "modules/Pushbutton_Controller.h"
-#include "hardware/drivers/power_control.h"
 #include "modules/Beep_Controller.h"
+
+#include "can-proto/driver/base_node.h"
 
 namespace hebi::firmware {
 
@@ -24,7 +27,8 @@ class Battery_Node : public protocol::Base_Node {
         FAULT = 5,                  //Fault detected with user feedback
         OUTPUT_ENABLED = 6,         //Normal operation, DSG / CHG enabled
         CHARGE_ENABLED = 7,         //Charger detected, DSG disabled, CHG enabled
-        CHARGE_TIMEOUT = 8,         //Charger detected but timeout reached, DSG & CHG disabled
+        CHARGE_PRESENT = 8,         //Charger present but not actively charging, DSG disabled, CHG enabled
+        CHARGE_FINISHED = 9,        //Charge finished, DSG disabled, CHG enabled
 
         //CAN Special states - Outputs off
         ID_ACQUISITION_WAIT = 20,   //Waiting for CAN node id assignment.
@@ -40,6 +44,7 @@ public:
         modules::Pushbutton_Controller& button_ctrl,
         modules::Beep_Controller& beeper,
         protocol::CAN_driver& can_driver,
+        hardware::BQ34Z100_I2C& bat_i2c,
         hardware::Power_Control& power_ctrl);
 
     void update(bool chg_detect, bool polarity_ok, float v_bat, float v_ext);
@@ -63,11 +68,22 @@ public:
     }
 
 protected:
-    static const uint32_t LOW_POWER_TIMEOUT_MS = 2000;
-    static const uint32_t CHARGE_TIMEOUT_MS = 20 * 60 * 1000;
-    static constexpr float CHARGE_LOW_THR = 20.;
+    static const uint64_t BATTERY_DATA_TIMEOUT_MS = 300;
+
+    static const uint64_t LOW_POWER_TIMEOUT_MS = 2000;
+    static const uint64_t CHARGE_PRES_TIMEOUT_MS = 1 * 1000; /* 1s */
+    static const uint64_t CHARGE_FIN_TIMEOUT_MS = 4 * 60 * 60 * 1000; /* 4 hr */
+
+    static constexpr float CHARGE_VOLTAGE_LOW_THR = 20.; /* V */
+    static constexpr float CHARGE_FIN_VOLTAGE_THR = 41.5; /* V */
+    static const int16_t CHARGE_CURRENT_FIN_THR = 50; /* mA */
+    static const int16_t CHARGE_CURRENT_START_THR = 100; /* mA */
+
+    static constexpr float FAULT_BATTERY_UNDERVOLT_THR = 27.; /* V */
+    static constexpr float FAULT_BATTERY_DISCONNECT_THR = 24.; /* V */
 
     static const uint16_t FAULT_CODE_REVERSE_POLARITY = 0x01;
+    static const uint16_t FAULT_CODE_UNDERVOLTAGE = 0x02;
 
     void initNodeID();
     void changeNodeState(NodeState state);
@@ -93,14 +109,18 @@ protected:
     bool node_id_valid_ { false };
     uint8_t node_id_ { protocol::DEFAULT_NODE_ID };
     NodeState state_ { NodeState::INIT };
-    uint32_t state_counter_ {0};
+    uint64_t state_counter_ {0};
     uint16_t fault_code_ {0};
+
+    hardware::battery_data last_battery_data_ {};
+    uint64_t last_battery_data_counter_ {0};
 
     hardware::Flash_Database& database_;
     modules::LED_Controller& led_;
     modules::Beep_Controller& beeper_;
     modules::Pushbutton_Controller& button_;
     protocol::CAN_driver& can_driver_;
+    hardware::BQ34Z100_I2C& bat_i2c_;
     hardware::Power_Control& power_ctrl_;
     
     // uint8_t counter_ {0};

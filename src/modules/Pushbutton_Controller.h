@@ -93,8 +93,8 @@ private:
     };
 
     const uint16_t t_rising_;
-    const uint16_t t_rising_edge_det_;
     const uint16_t t_falling_;
+    const uint16_t t_rising_edge_det_;
 
     bool edge_detect_mode_ { TOGGLE_MODE };
     uint16_t count_ {0};
