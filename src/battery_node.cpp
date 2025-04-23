@@ -26,7 +26,7 @@ void Battery_Node::initNodeID(){
         node_id_ = protocol::DEFAULT_NODE_ID;
 }
 
-void Battery_Node::update(bool chg_detect, bool polarity_ok) {
+void Battery_Node::update(bool chg_detect, bool polarity_ok, float v_bat, float v_ext) {
     bool has_data = true;
     bool msg_recvd = false;
 
@@ -66,6 +66,10 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok) {
     case NodeState::FAULT:
         if(!beeper_.active())
             beeper_.beepFault(200);
+        if(!button_.enabled()){ 
+            changeNodeState(NodeState::FAULT_SILENT);
+        }
+        break;
     case NodeState::OUTPUT_ENABLED:
         if(!button_.enabled()){ 
             changeNodeState(NodeState::LOW_POWER_TIMEOUT);
@@ -76,7 +80,7 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok) {
 
         if(button_.enabled()){ 
             changeNodeState(NodeState::OUTPUT_ENABLED);
-        } else if(!chg_detect) {
+        } else if(v_ext < CHARGE_LOW_THR) {
             changeNodeState(NodeState::LOW_POWER_TIMEOUT);
         } else if (state_counter_ == CHARGE_TIMEOUT_MS) {
             changeNodeState(NodeState::CHARGE_TIMEOUT);
@@ -85,7 +89,7 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok) {
     case NodeState::CHARGE_TIMEOUT:
         if(button_.enabled()){ 
             changeNodeState(NodeState::OUTPUT_ENABLED);
-        } else if(!chg_detect) {
+        } else if(v_ext < CHARGE_LOW_THR) {
             changeNodeState(NodeState::LOW_POWER_TIMEOUT);
         }
         break;
@@ -282,16 +286,16 @@ void Battery_Node::recvd_ctrl_stop_acquisition(protocol::ctrl_stop_acquisition_m
 
 void Battery_Node::recvd_cmd_start_data(protocol::cmd_start_data_msg msg){
     //Request must be coming from master node
-    if(msg.EID.node_id != 0x00 && node_id_ != protocol::DEFAULT_NODE_ID) return; 
+    if(msg.EID.node_id != 0x00 || node_id_ == protocol::DEFAULT_NODE_ID) return; 
 
     send_battery_data_ = true; 
 }
 
 void Battery_Node::recvd_ctrl_poll_node_id(protocol::ctrl_poll_node_id_msg msg){
     //Request must be coming from master node
-    if(msg.EID.node_id != 0x00 && node_id_ != protocol::DEFAULT_NODE_ID) return; 
+    if(msg.EID.node_id != 0x00 || node_id_ == protocol::DEFAULT_NODE_ID) return; 
 
-    addTxMessage(protocol::ctrl_poll_node_id_msg(node_id_));
+    can_driver_.sendMessage(protocol::ctrl_poll_node_id_msg(node_id_));
 }
 
 void Battery_Node::recvd_ctrl_set_node_id(protocol::ctrl_set_node_id_msg msg){

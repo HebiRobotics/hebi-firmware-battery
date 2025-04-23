@@ -42,7 +42,7 @@ public:
         protocol::CAN_driver& can_driver,
         hardware::Power_Control& power_ctrl);
 
-    void update(bool chg_detect, bool polarity_ok);
+    void update(bool chg_detect, bool polarity_ok, float v_bat, float v_ext);
 
     bool chgEnable() { return chg_enable_; }
     bool dsgEnable() { return dsg_enable_; }
@@ -65,6 +65,7 @@ public:
 protected:
     static const uint32_t LOW_POWER_TIMEOUT_MS = 2000;
     static const uint32_t CHARGE_TIMEOUT_MS = 20 * 60 * 1000;
+    static constexpr float CHARGE_LOW_THR = 20.;
 
     static const uint16_t FAULT_CODE_REVERSE_POLARITY = 0x01;
 

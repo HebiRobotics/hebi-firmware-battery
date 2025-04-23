@@ -104,12 +104,9 @@ int main(void) {
 
     while (true) {
 
-        volatile float voltage = adc.v_bat();
-        volatile float voltage_ext = adc.v_ext();
-
         button.update(palReadLine(LINE_PB_WKUP));
 
-        battery_node.update(comp.output_comp1(), comp.output_comp2());
+        battery_node.update(comp.output_comp1(), comp.output_comp2(), adc.v_bat(), adc.v_ext());
 
         status_led.update();
         beeper.update();
