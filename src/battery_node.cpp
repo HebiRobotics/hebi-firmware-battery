@@ -85,7 +85,7 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok, float v_bat, float 
             changeNodeState(NodeState::OUTPUT_ENABLED);
         } else if(chg_detect) {
             //TODO: Check voltage with ADC, charge state, etc.
-            changeNodeState(NodeState::CHARGE_ENABLED);
+            changeNodeState(NodeState::CHARGE_LOCKOUT);
         } else if(state_counter_ == LOW_POWER_TIMEOUT_MS){
             enterLowPowerMode();
         }
@@ -107,6 +107,11 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok, float v_bat, float 
         if(!button_.enabled()){ 
             changeNodeState(NodeState::LOW_POWER_TIMEOUT);
         }
+        break;
+    case NodeState::CHARGE_LOCKOUT:
+        state_counter_++;
+        if(state_counter_ > CHARGE_LOCKOUT_MS)
+            changeNodeState(NodeState::CHARGE_ENABLED);
         break;
     case NodeState::CHARGE_ENABLED:
         if(last_battery_data_.current < CHARGE_CURRENT_FIN_THR)
@@ -252,11 +257,21 @@ void Battery_Node::changeNodeStateUnsafe(NodeState state){
         state_ = NodeState::OUTPUT_ENABLED;
         break;
     }
+    case NodeState::CHARGE_LOCKOUT: {
+        dsg_enable_ = false;
+        chg_enable_ = false;
+        led_.orange().blinkFast();
+        beeper_.beepTwice();
+
+        state_counter_ = 0;
+        state_ = NodeState::CHARGE_LOCKOUT;
+        break;
+    }
     case NodeState::CHARGE_ENABLED: {
         dsg_enable_ = false;
         chg_enable_ = true;
         led_.orange().blinkFast();
-        beeper_.beepTwice();
+        // beeper_.beepTwice();
 
         state_counter_ = 0;
         state_ = NodeState::CHARGE_ENABLED;

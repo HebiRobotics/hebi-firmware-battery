@@ -26,9 +26,10 @@ class Battery_Node : public protocol::Base_Node {
         FAULT_SILENT = 4,           //Fault detected, but no user feedback (low power mode)
         FAULT = 5,                  //Fault detected with user feedback
         OUTPUT_ENABLED = 6,         //Normal operation, DSG / CHG enabled
-        CHARGE_ENABLED = 7,         //Charger detected, DSG disabled, CHG enabled
-        CHARGE_PRESENT = 8,         //Charger present but not actively charging, DSG disabled, CHG enabled
-        CHARGE_FINISHED = 9,        //Charge finished, DSG disabled, CHG enabled
+        CHARGE_LOCKOUT = 7,         //Charger detected, DSG / CHG disabled. Lets every battery initialize before CC mode is enabled
+        CHARGE_ENABLED = 8,         //Charger detected, DSG disabled, CHG enabled
+        CHARGE_PRESENT = 9,         //Charger present but not actively charging, DSG disabled, CHG enabled
+        CHARGE_FINISHED = 10,       //Charge finished, DSG disabled, CHG enabled
 
         //CAN Special states - Outputs off
         ID_ACQUISITION_WAIT = 20,   //Waiting for CAN node id assignment.
@@ -71,6 +72,7 @@ protected:
     static const uint64_t BATTERY_DATA_TIMEOUT_MS = 300;
 
     static const uint64_t LOW_POWER_TIMEOUT_MS = 2000;
+    static const uint64_t CHARGE_LOCKOUT_MS = 50; /* 50ms */
     static const uint64_t CHARGE_PRES_TIMEOUT_MS = 1 * 1000; /* 1s */
     static const uint64_t CHARGE_FIN_TIMEOUT_MS = 4 * 60 * 60 * 1000; /* 4 hr */
 
