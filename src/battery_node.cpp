@@ -43,15 +43,18 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok, uint16_t v_bat, uin
     }
 
     last_battery_data_counter_++;
+    battery_connected_ = bat_i2c_.batteryPresent();
+
+    if(!battery_connected_ && state_ != NodeState::NO_BATTERY_DETECTED)
+        changeNodeState(NodeState::NO_BATTERY_DETECTED);
 
     //Update with latest fuel gauge data
     if(bat_i2c_.hasData()){
         last_battery_data_ = bat_i2c_.getData();
         last_battery_data_counter_ = 0;
-        battery_connected_ = true;
 
         //If we should be sending data, broadcast it
-        if(send_battery_data_ && node_id_ != protocol::DEFAULT_NODE_ID)
+        if(send_battery_data_ && node_id_ != protocol::DEFAULT_NODE_ID){
             can_driver_.sendMessage( protocol::battery_state_msg(
                 node_id_, 
                 protocol::battery_state_msg::BATTERY_CONNECTED_FLAG,
@@ -60,12 +63,24 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok, uint16_t v_bat, uin
                 last_battery_data_.current, 
                 last_battery_data_.temperature
             ));
+            can_driver_.sendMessage( protocol::battery_state_ext_1_msg(
+                node_id_, 
+                last_battery_data_.avg_current, 
+                last_battery_data_.standby_current, 
+                last_battery_data_.status_flags, 
+                last_battery_data_.avg_power
+            ));
+            can_driver_.sendMessage( protocol::battery_state_ext_2_msg(
+                node_id_, 
+                last_battery_data_.time_to_empty, 
+                last_battery_data_.time_to_full, 
+                last_battery_data_.capacity_remaining, 
+                last_battery_data_.capacity_full
+            ));
+        }
     } else if (last_battery_data_counter_ > BATTERY_DATA_TIMEOUT_MS){
         last_battery_data_ = {};
         last_battery_data_counter_ = 0;
-        battery_connected_ = false;
-
-        changeNodeState(NodeState::NO_BATTERY_DETECTED);
 
         if(send_battery_data_ && node_id_ != protocol::DEFAULT_NODE_ID)
             can_driver_.sendMessage( protocol::battery_state_msg(
