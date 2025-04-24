@@ -70,7 +70,7 @@ public:
     }
 
 protected:
-    static const uint64_t BATTERY_DATA_TIMEOUT_MS = 300;
+    static const uint64_t BATTERY_DATA_TIMEOUT_MS = 1100;
 
     static const uint64_t LOW_POWER_TIMEOUT_MS = 2000;
     static const uint64_t CHARGE_LOCKOUT_MS = 50; /* 50ms */
