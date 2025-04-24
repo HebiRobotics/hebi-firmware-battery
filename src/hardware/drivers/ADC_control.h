@@ -16,8 +16,8 @@ public:
     ADC_control();
 
     static void dataUpdated(bool which);
-    float v_bat();
-    float v_ext();
+    uint16_t v_bat();
+    uint16_t v_ext();
     
     void startDriver();
     void stopDriver();

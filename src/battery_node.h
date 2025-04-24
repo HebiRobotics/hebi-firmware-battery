@@ -30,6 +30,7 @@ class Battery_Node : public protocol::Base_Node {
         CHARGE_ENABLED = 8,         //Charger detected, DSG disabled, CHG enabled
         CHARGE_PRESENT = 9,         //Charger present but not actively charging, DSG disabled, CHG enabled
         CHARGE_FINISHED = 10,       //Charge finished, DSG disabled, CHG enabled
+        NO_BATTERY_DETECTED = 11,   //Bus power on, but no battery comms detected
 
         //CAN Special states - Outputs off
         ID_ACQUISITION_WAIT = 20,   //Waiting for CAN node id assignment.
@@ -48,7 +49,7 @@ public:
         hardware::BQ34Z100_I2C& bat_i2c,
         hardware::Power_Control& power_ctrl);
 
-    void update(bool chg_detect, bool polarity_ok, float v_bat, float v_ext);
+    void update(bool chg_detect, bool polarity_ok, uint16_t v_bat, uint16_t v_ext);
 
     bool chgEnable() { return chg_enable_; }
     bool dsgEnable() { return dsg_enable_; }
@@ -76,9 +77,9 @@ protected:
     static const uint64_t CHARGE_PRES_TIMEOUT_MS = 1 * 1000; /* 1s */
     static const uint64_t CHARGE_FIN_TIMEOUT_MS = 4 * 60 * 60 * 1000; /* 4 hr */
 
-    static constexpr float CHARGE_VOLTAGE_LOW_THR = 20.; /* V */
-    static constexpr float CHARGE_FIN_VOLTAGE_THR = 41.5; /* V */
-    static const int16_t CHARGE_CURRENT_FIN_THR = 50; /* mA */
+    static const uint16_t CHARGE_VOLTAGE_LOW_THR = 20000; /* mV */
+    static const uint16_t CHARGE_FIN_VOLTAGE_THR = 41500; /* mV */
+    static const int16_t CHARGE_CURRENT_OFF_THR = 20; /* mA */
     static const int16_t CHARGE_CURRENT_START_THR = 100; /* mA */
 
     static constexpr float FAULT_BATTERY_UNDERVOLT_THR = 27.; /* V */
@@ -107,6 +108,7 @@ protected:
     bool dsg_enable_ { false };
     bool chg_enable_ { false };
 
+    bool battery_connected_ { false };
     bool send_battery_data_ { false };
     bool node_id_valid_ { false };
     uint8_t node_id_ { protocol::DEFAULT_NODE_ID };

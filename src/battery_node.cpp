@@ -27,7 +27,7 @@ void Battery_Node::initNodeID(){
         node_id_ = protocol::DEFAULT_NODE_ID;
 }
 
-void Battery_Node::update(bool chg_detect, bool polarity_ok, float v_bat, float v_ext) {
+void Battery_Node::update(bool chg_detect, bool polarity_ok, uint16_t v_bat, uint16_t v_ext) {
     bool has_data = true;
     bool msg_recvd = false;
 
@@ -48,6 +48,7 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok, float v_bat, float 
     if(bat_i2c_.hasData()){
         last_battery_data_ = bat_i2c_.getData();
         last_battery_data_counter_ = 0;
+        battery_connected_ = true;
 
         //If we should be sending data, broadcast it
         if(send_battery_data_ && node_id_ != protocol::DEFAULT_NODE_ID)
@@ -62,6 +63,9 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok, float v_bat, float 
     } else if (last_battery_data_counter_ > BATTERY_DATA_TIMEOUT_MS){
         last_battery_data_ = {};
         last_battery_data_counter_ = 0;
+        battery_connected_ = false;
+
+        changeNodeState(NodeState::NO_BATTERY_DETECTED);
 
         if(send_battery_data_ && node_id_ != protocol::DEFAULT_NODE_ID)
             can_driver_.sendMessage( protocol::battery_state_msg(
@@ -81,14 +85,20 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok, float v_bat, float 
 
         if(!polarity_ok) { //Reverse polarity fault
             enterFaultState(FAULT_CODE_REVERSE_POLARITY);
+        } else if (!battery_connected_) {
+            changeNodeState(NodeState::NO_BATTERY_DETECTED);
         } else if(button_.enabled()){
             changeNodeState(NodeState::OUTPUT_ENABLED);
-        } else if(chg_detect) {
+        } else if(v_ext > CHARGE_VOLTAGE_LOW_THR) {
             //TODO: Check voltage with ADC, charge state, etc.
             changeNodeState(NodeState::CHARGE_LOCKOUT);
         } else if(state_counter_ == LOW_POWER_TIMEOUT_MS){
             enterLowPowerMode();
         }
+        break;
+    case NodeState::NO_BATTERY_DETECTED:
+        if(battery_connected_)
+            changeNodeState(NodeState::LOW_POWER_TIMEOUT);
         break;
     case NodeState::FAULT_SILENT:
         //TODO: Check battery state, Reset behavior
@@ -114,7 +124,8 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok, float v_bat, float 
             changeNodeState(NodeState::CHARGE_ENABLED);
         break;
     case NodeState::CHARGE_ENABLED:
-        if(last_battery_data_.current < CHARGE_CURRENT_FIN_THR)
+        //TODO: use SOC for charge end detection?
+        if(last_battery_data_.current < CHARGE_CURRENT_OFF_THR || last_battery_data_.fullyCharged())
             state_counter_++;
         else
             state_counter_ = 0;
@@ -126,14 +137,14 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok, float v_bat, float 
         } else if (state_counter_ >= CHARGE_PRES_TIMEOUT_MS) {
             /* If current has dropped low for at least CHARGE_PRES_TIMEOUT_MS, 
                 try to figure out if the battery is fully charged*/
-            if(last_battery_data_.voltage >= CHARGE_FIN_VOLTAGE_THR)
+            if(last_battery_data_.fullyCharged())
                 changeNodeState(NodeState::CHARGE_FINISHED);
             else
                 changeNodeState(NodeState::CHARGE_PRESENT);
         }
         break;
     case NodeState::CHARGE_PRESENT:
-        if(last_battery_data_.current < CHARGE_CURRENT_FIN_THR)
+        if(last_battery_data_.current < CHARGE_CURRENT_OFF_THR)
             state_counter_++;
         else
             state_counter_ = 0;
@@ -149,7 +160,7 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok, float v_bat, float 
         }
         break;
     case NodeState::CHARGE_FINISHED:
-        if(last_battery_data_.current < CHARGE_CURRENT_FIN_THR)
+        if(last_battery_data_.current < CHARGE_CURRENT_OFF_THR)
             state_counter_++;
         else
             state_counter_ = 0;
@@ -294,6 +305,15 @@ void Battery_Node::changeNodeStateUnsafe(NodeState state){
 
         state_counter_ = 0;
         state_ = NodeState::CHARGE_FINISHED;
+        break;
+    }
+    case NodeState::NO_BATTERY_DETECTED: {
+        dsg_enable_ = false;
+        chg_enable_ = false;
+        led_.red().blink();
+
+        state_counter_ = 0;
+        state_ = NodeState::NO_BATTERY_DETECTED;
         break;
     }
     /* CAN Special States */

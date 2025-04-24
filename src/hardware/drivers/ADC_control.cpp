@@ -21,8 +21,8 @@ namespace hebi::firmware::hardware {
 #define ADC_BUF_DEPTH       2
 #define ADC_NUM_CHANNELS    2
 #define ADC_MAX             (8.f * 4096.f) //8x oversampled 12 bits
-#define ADC_CONV_SCALE_BAT  ((3.3f / ADC_MAX) * (33.f + 2.f) / (2.f))
-#define ADC_CONV_SCALE_EXT  ((3.3f / ADC_MAX) * (84.5f + 2.55f) / (2.55f))
+#define ADC_CONV_SCALE_BAT  (1000.0f * (3.3f / ADC_MAX) * (33.f + 2.f) / (2.f))
+#define ADC_CONV_SCALE_EXT  (1000.0f * (3.3f / ADC_MAX) * (84.5f + 2.55f) / (2.55f))
 
 static adcsample_t samples[CACHE_SIZE_ALIGN(adcsample_t, ADC_NUM_CHANNELS * ADC_BUF_DEPTH)];
 uint8_t ADC_control::v_bat_which_index_ {0};
@@ -73,11 +73,11 @@ void ADC_control::dataUpdated(bool which){
     v_ext_which_index_ = which_index + 1; 
 }
 
-float ADC_control::v_bat(){
+uint16_t ADC_control::v_bat(){ //v_bat, in mV
     return samples[v_bat_which_index_] * ADC_CONV_SCALE_BAT;
 }
 
-float ADC_control::v_ext(){
+uint16_t ADC_control::v_ext(){ //v_ext, in mV
     return samples[v_ext_which_index_] * ADC_CONV_SCALE_EXT;
 }
 

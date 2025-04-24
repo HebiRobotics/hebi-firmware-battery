@@ -12,6 +12,18 @@ struct battery_data {
     uint16_t capacity_remaining {0};
     uint16_t capacity_full {0};
     uint16_t temperature {0};
+
+    float voltageFloat() const {
+        return (float) voltage / 1000.;
+    }
+    
+    float currentFloat() const {
+        return (float) current / 1000.;
+    }
+
+    bool fullyCharged() const {
+        return soc == 100;
+    }
 };
 
 class BQ34Z100_I2C : public Driver {
