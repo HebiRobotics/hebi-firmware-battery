@@ -53,13 +53,22 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok, float v_bat, float 
         if(send_battery_data_ && node_id_ != protocol::DEFAULT_NODE_ID)
             can_driver_.sendMessage( protocol::battery_state_msg(
                 node_id_, 
+                protocol::battery_state_msg::BATTERY_CONNECTED_FLAG,
+                last_battery_data_.soc, 
                 last_battery_data_.voltage, 
                 last_battery_data_.current, 
-                last_battery_data_.soc, 
                 last_battery_data_.temperature
             ));
     } else if (last_battery_data_counter_ > BATTERY_DATA_TIMEOUT_MS){
         last_battery_data_ = {};
+        last_battery_data_counter_ = 0;
+
+        if(send_battery_data_ && node_id_ != protocol::DEFAULT_NODE_ID)
+            can_driver_.sendMessage( protocol::battery_state_msg(
+                node_id_, 
+                0, //Battery not connected
+                0, 0, 0, 0 //Data invalid
+            ));
     }
 
     //TODO: Battery undervoltage detection
