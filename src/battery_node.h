@@ -99,6 +99,7 @@ protected:
     void recvd_ctrl_set_node_id(protocol::ctrl_set_node_id_msg msg) override;
     void recvd_ctrl_start_acquisition(protocol::ctrl_start_acquisition_msg msg) override; 
     void recvd_ctrl_stop_acquisition(protocol::ctrl_stop_acquisition_msg msg) override; 
+    void recvd_ctrl_read_info(protocol::ctrl_read_info_msg msg) override;
 
     void recvd_cmd_start_data(protocol::cmd_start_data_msg msg) override;
     void recvd_cmd_set_led(protocol::cmd_set_led_msg msg) override;

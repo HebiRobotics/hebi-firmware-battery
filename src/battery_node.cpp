@@ -1,4 +1,6 @@
 #include "battery_node.h"
+#include "project_info.h"
+#include <string.h>
 
 extern "C" {
     #include <ch.h>
@@ -435,6 +437,23 @@ void Battery_Node::recvd_ctrl_set_node_id(protocol::ctrl_set_node_id_msg msg){
         initNodeID();
 
         changeNodeState(NodeState::ID_ACQUISITION_DONE);
+    }
+}
+
+void Battery_Node::recvd_ctrl_read_info(protocol::ctrl_read_info_msg msg) { 
+    if(msg.EID.node_id != node_id_) return;
+    
+    uint8_t guid[8] = {}; //TODO - fill this in
+
+    if(msg.read_GUID()) can_driver_.sendMessage(protocol::ctrl_guid_msg(node_id_, 0, guid));
+    if(msg.read_elec_type()) can_driver_.sendMessage(protocol::ctrl_elec_type_msg(node_id_, ELECTRICAL_TYPE));
+    if(msg.read_HW_type()) can_driver_.sendMessage(protocol::ctrl_elec_type_msg(node_id_, BOARD_TYPE));
+    if(msg.read_FW_version()){
+        size_t size = strlen(FIRMWARE_REVISION);
+        size_t msg_len = protocol::ctrl_fw_version_msg::MSG_LEN_BYTES;
+        size_t ind = (size / msg_len) + 1;
+        for(size_t i = 0; i < ind; i++)
+            can_driver_.sendMessage(protocol::ctrl_fw_version_msg(node_id_, i, &FIRMWARE_REVISION[(i*msg_len)]));
     }
 }
 
