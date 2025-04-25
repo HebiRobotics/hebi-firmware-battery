@@ -1,4 +1,5 @@
 COMMON = ./common
+FIRMWARE_MODE = APPLICATION
 include $(COMMON)/common.mk
 
 include $(BOARDDIR)/HEBI_PCBA_2121_01/board.mk
