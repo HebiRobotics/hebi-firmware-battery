@@ -4,16 +4,16 @@
 
 #pragma once
 
-#include "hardware/drivers/Battery_CAN.h"
-#include "hardware/drivers/power_control.h"
-#include "hardware/Flash_Database.h"
-#include "hardware/drivers/BQ34Z100_I2C.h"
+#include "drivers/Battery_CAN.h"
+#include "drivers/power_control.h"
+#include "Flash_Database.h"
+#include "drivers/BQ34Z100_I2C.h"
 
-#include "modules/LED_Controller.h"
-#include "modules/Pushbutton_Controller.h"
-#include "modules/Beep_Controller.h"
+#include "LED_Controller.h"
+#include "Pushbutton_Controller.h"
+#include "Beep_Controller.h"
 
-#include "can-proto/driver/base_node.h"
+#include "nodes/base_node.h"
 
 namespace hebi::firmware {
 
