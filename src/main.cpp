@@ -20,21 +20,21 @@ extern "C" {
 void __late_init();
 }
 
-#include "modules/Beep_Controller.h"
-#include "modules/LED_Controller.h"
-#include "modules/Pushbutton_Controller.h"
-#include "hardware/drivers/LED_RGB_PWM1.h"
-#include "hardware/drivers/Beeper_PWM16.h"
-#include "hardware/drivers/Battery_CAN.h"
-#include "hardware/drivers/BQ34Z100_I2C.h"
-#include "hardware/drivers/Flash_STM32L4.h"
-#include "hardware/drivers/power_control.h"
-#include "hardware/drivers/COMP_STM32L4.h"
-#include "hardware/drivers/ADC_control.h"
+#include "Beep_Controller.h"
+#include "LED_Controller.h"
+#include "Pushbutton_Controller.h"
+#include "drivers/LED_RGB_PWM1.h"
+#include "drivers/Beeper_PWM16.h"
+#include "drivers/Battery_CAN.h"
+#include "drivers/BQ34Z100_I2C.h"
+#include "drivers/Flash_STM32L4.h"
+#include "drivers/power_control.h"
+#include "drivers/COMP_STM32L4.h"
+#include "drivers/ADC_control.h"
 
 #include "battery_node.h"
 
-#include "hardware/Driver.h"
+#include "Driver.h"
 #include <array>
 #include <vector>
 
