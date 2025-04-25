@@ -445,15 +445,15 @@ void Battery_Node::recvd_ctrl_read_info(protocol::ctrl_read_info_msg msg) {
     
     uint8_t guid[8] = {}; //TODO - fill this in
 
-    if(msg.read_GUID()) can_driver_.sendMessage(protocol::ctrl_guid_msg(node_id_, 0, guid));
+    if(msg.read_GUID()) can_driver_.sendMessage(protocol::ctrl_guid_msg(node_id_, 0, *(uint64_t*)UID_BASE));
     if(msg.read_elec_type()) can_driver_.sendMessage(protocol::ctrl_elec_type_msg(node_id_, ELECTRICAL_TYPE));
-    if(msg.read_HW_type()) can_driver_.sendMessage(protocol::ctrl_elec_type_msg(node_id_, BOARD_TYPE));
+    if(msg.read_HW_type()) can_driver_.sendMessage(protocol::ctrl_hw_type_msg(node_id_, BOARD_TYPE));
     if(msg.read_FW_version()){
         size_t size = strlen(FIRMWARE_REVISION);
         size_t msg_len = protocol::ctrl_fw_version_msg::MSG_LEN_BYTES;
         size_t ind = (size / msg_len) + 1;
         for(size_t i = 0; i < ind; i++)
-            can_driver_.sendMessage(protocol::ctrl_fw_version_msg(node_id_, i, &FIRMWARE_REVISION[(i*msg_len)]));
+            can_driver_.sendMessage(protocol::ctrl_fw_version_msg(node_id_, i, FIRMWARE_REVISION + (i*msg_len)));
     }
 }
 
