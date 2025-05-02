@@ -55,7 +55,7 @@ public:
     bool dsgEnable() { return dsg_enable_; }
     bool isFaulted() { return state_ == NodeState::FAULT; }
     
-    void addTxMessage(protocol::base_msg msg) {
+    void addTxMessage(protocol::base_msg& msg) {
         if(!node_id_valid_) return;
 
         can_driver_.sendMessage(msg);
@@ -95,16 +95,16 @@ protected:
     void enterLowPowerMode();
     void enterFaultState(uint16_t fault_code);
 
-    void recvd_ctrl_poll_node_id(protocol::ctrl_poll_node_id_msg msg) override;
-    void recvd_ctrl_set_node_id(protocol::ctrl_set_node_id_msg msg) override;
-    void recvd_ctrl_start_acquisition(protocol::ctrl_start_acquisition_msg msg) override; 
-    void recvd_ctrl_stop_acquisition(protocol::ctrl_stop_acquisition_msg msg) override; 
-    void recvd_ctrl_read_info(protocol::ctrl_read_info_msg msg) override;
+    void recvd_ctrl_poll_node_id(protocol::ctrl_poll_node_id_msg& msg) override;
+    void recvd_ctrl_set_node_id(protocol::ctrl_set_node_id_msg& msg) override;
+    void recvd_ctrl_start_acquisition(protocol::ctrl_start_acquisition_msg& msg) override; 
+    void recvd_ctrl_stop_acquisition(protocol::ctrl_stop_acquisition_msg& msg) override; 
+    void recvd_ctrl_read_info(protocol::ctrl_read_info_msg& msg) override;
 
-    void recvd_cmd_start_data(protocol::cmd_start_data_msg msg) override;
-    void recvd_cmd_set_led(protocol::cmd_set_led_msg msg) override;
-    void recvd_cmd_disable_output(protocol::cmd_disable_output_msg msg) override;
-    void recvd_cmd_enable_output(protocol::cmd_enable_output_msg msg) override;
+    void recvd_cmd_start_data(protocol::cmd_start_data_msg& msg) override;
+    void recvd_cmd_set_led(protocol::cmd_set_led_msg& msg) override;
+    void recvd_cmd_disable_output(protocol::cmd_disable_output_msg& msg) override;
+    void recvd_cmd_enable_output(protocol::cmd_enable_output_msg& msg) override;
     
     bool dsg_enable_ { false };
     bool chg_enable_ { false };

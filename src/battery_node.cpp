@@ -375,7 +375,7 @@ void Battery_Node::changeNodeStateUnsafe(NodeState state){
     }
 }
 
-void Battery_Node::recvd_ctrl_start_acquisition(protocol::ctrl_start_acquisition_msg msg){
+void Battery_Node::recvd_ctrl_start_acquisition(protocol::ctrl_start_acquisition_msg& msg){
     //Request must be coming from master node
     //Must not already be in acquisition state
     if(msg.EID.node_id != 0x00 || 
@@ -402,7 +402,7 @@ void Battery_Node::recvd_ctrl_start_acquisition(protocol::ctrl_start_acquisition
         changeNodeState(NodeState::ID_ACQUISITION_DONE);
 }
 
-void Battery_Node::recvd_ctrl_stop_acquisition(protocol::ctrl_stop_acquisition_msg msg){
+void Battery_Node::recvd_ctrl_stop_acquisition(protocol::ctrl_stop_acquisition_msg& msg){
     //Request must be coming from master node
     if(msg.EID.node_id != 0x00 || 
         (state_ != NodeState::ID_ACQUISITION_WAIT && 
@@ -412,21 +412,21 @@ void Battery_Node::recvd_ctrl_stop_acquisition(protocol::ctrl_stop_acquisition_m
     changeNodeState(NodeState::LOW_POWER_TIMEOUT);
 }
 
-void Battery_Node::recvd_cmd_start_data(protocol::cmd_start_data_msg msg){
+void Battery_Node::recvd_cmd_start_data(protocol::cmd_start_data_msg& msg){
     //Request must be coming from master node
     if(msg.EID.node_id != 0x00 || node_id_ == protocol::DEFAULT_NODE_ID) return; 
 
     send_battery_data_ = true; 
 }
 
-void Battery_Node::recvd_ctrl_poll_node_id(protocol::ctrl_poll_node_id_msg msg){
+void Battery_Node::recvd_ctrl_poll_node_id(protocol::ctrl_poll_node_id_msg& msg){
     //Request must be coming from master node
     if(msg.EID.node_id != 0x00 || node_id_ == protocol::DEFAULT_NODE_ID) return; 
 
     can_driver_.sendMessage(protocol::ctrl_poll_node_id_msg(node_id_));
 }
 
-void Battery_Node::recvd_ctrl_set_node_id(protocol::ctrl_set_node_id_msg msg){
+void Battery_Node::recvd_ctrl_set_node_id(protocol::ctrl_set_node_id_msg& msg){
     if(msg.EID.node_id != node_id_ || state_ != NodeState::ID_ACQUISITION_TAKE) return;
 
     uint8_t new_node_id = msg.new_node_id();
@@ -440,7 +440,7 @@ void Battery_Node::recvd_ctrl_set_node_id(protocol::ctrl_set_node_id_msg msg){
     }
 }
 
-void Battery_Node::recvd_ctrl_read_info(protocol::ctrl_read_info_msg msg) { 
+void Battery_Node::recvd_ctrl_read_info(protocol::ctrl_read_info_msg& msg) { 
     if(msg.EID.node_id != node_id_) return;
     
     uint8_t guid[8] = {}; //TODO - fill this in
@@ -457,7 +457,7 @@ void Battery_Node::recvd_ctrl_read_info(protocol::ctrl_read_info_msg msg) {
     }
 }
 
-void Battery_Node::recvd_cmd_set_led(protocol::cmd_set_led_msg msg){
+void Battery_Node::recvd_cmd_set_led(protocol::cmd_set_led_msg& msg){
     if(msg.EID.node_id != node_id_) return;
 
     if(msg.enabled())
@@ -467,13 +467,13 @@ void Battery_Node::recvd_cmd_set_led(protocol::cmd_set_led_msg msg){
 
 }
 
-void Battery_Node::recvd_cmd_disable_output(protocol::cmd_disable_output_msg msg){
+void Battery_Node::recvd_cmd_disable_output(protocol::cmd_disable_output_msg& msg){
     if(msg.EID.node_id != node_id_) return;
     
     button_.forceDisabled();
 }
 
-void Battery_Node::recvd_cmd_enable_output(protocol::cmd_enable_output_msg msg){
+void Battery_Node::recvd_cmd_enable_output(protocol::cmd_enable_output_msg& msg){
     if(msg.EID.node_id != node_id_) return;
     
     button_.forceEnabled();
