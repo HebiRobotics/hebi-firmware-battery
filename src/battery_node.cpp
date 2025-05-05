@@ -3,8 +3,9 @@
 #include <string.h>
 
 extern "C" {
-    #include <ch.h>
-    #include <hal.h>
+#include <ch.h>
+#include <hal.h>
+#include "boot_ctrl.h"
 }
 
 using namespace hebi::firmware;
@@ -455,6 +456,19 @@ void Battery_Node::recvd_ctrl_read_info(protocol::ctrl_read_info_msg& msg) {
         for(size_t i = 0; i < ind; i++)
             can_driver_.sendMessage(protocol::ctrl_fw_version_msg(node_id_, i, FIRMWARE_REVISION + (i*msg_len)));
     }
+    if(msg.read_FW_mode()) can_driver_.sendMessage(protocol::ctrl_fw_mode_msg(node_id_, protocol::ctrl_fw_mode_msg::FW_MODE_APP));
+}
+
+void Battery_Node::recvd_ctrl_set_stay_in_boot(protocol::ctrl_set_stay_in_boot_msg& msg) {
+    if(msg.EID.node_id != node_id_) return;
+
+    setStayInBootloader(msg.stay_in_bootloader());
+}
+
+void Battery_Node::recvd_ctrl_reset(protocol::ctrl_reset_msg& msg) {
+    if(msg.EID.node_id != node_id_) return;
+
+    NVIC_SystemReset();
 }
 
 void Battery_Node::recvd_cmd_set_led(protocol::cmd_set_led_msg& msg){
