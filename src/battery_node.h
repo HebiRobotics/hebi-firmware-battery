@@ -122,8 +122,10 @@ protected:
 
     hardware::battery_data last_battery_data_ {};
     uint64_t last_battery_data_counter_ {0};
-    
+
     uint8_t reference_md5[Hash::MD5_SUM_LEN];
+    static const uint8_t SERIAL_NUM_LEN = 16;
+    uint8_t serial_number_[SERIAL_NUM_LEN];
 
     hardware::Flash_Database& database_;
     modules::LED_Controller& led_;

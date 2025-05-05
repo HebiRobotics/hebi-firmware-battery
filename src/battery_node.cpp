@@ -23,6 +23,7 @@ Battery_Node::Battery_Node(hardware::Flash_Database& database,
     initNodeID();
     changeNodeStateUnsafe(NodeState::LOW_POWER_TIMEOUT);
     database.get(hardware::FlashDatabaseKey::APPLICATION_HASH, reference_md5);
+    database.get(hardware::FlashDatabaseKey::SERIAL_NUMBER, serial_number_);
 }
 
 void Battery_Node::initNodeID(){
@@ -464,6 +465,14 @@ void Battery_Node::recvd_ctrl_read_info(protocol::ctrl_read_info_msg& msg) {
         uint8_t N_PACKETS = Hash::MD5_SUM_LEN / msg_len;
         for(size_t i = 0; i < N_PACKETS; i++)
             can_driver_.sendMessage(protocol::ctrl_app_fw_hash_msg(node_id_, i, reference_md5 + (i*msg_len)));
+    }
+    if(msg.read_serial_number()){
+        //split into smaller messages
+        size_t size = strlen((const char*) serial_number_);
+        uint8_t msg_len = protocol::ctrl_serial_num_msg::MSG_LEN_BYTES;
+        uint8_t N_PACKETS = (size / msg_len) + 1;
+        for(size_t i = 0; i < N_PACKETS; i++)
+            can_driver_.sendMessage(protocol::ctrl_serial_num_msg(node_id_, i, serial_number_ + (i*msg_len)));
     }
 }
 
