@@ -22,6 +22,7 @@ Battery_Node::Battery_Node(hardware::Flash_Database& database,
     
     initNodeID();
     changeNodeStateUnsafe(NodeState::LOW_POWER_TIMEOUT);
+    database.get(hardware::FlashDatabaseKey::APPLICATION_HASH, reference_md5);
 }
 
 void Battery_Node::initNodeID(){
@@ -457,6 +458,13 @@ void Battery_Node::recvd_ctrl_read_info(protocol::ctrl_read_info_msg& msg) {
             can_driver_.sendMessage(protocol::ctrl_fw_version_msg(node_id_, i, FIRMWARE_REVISION + (i*msg_len)));
     }
     if(msg.read_FW_mode()) can_driver_.sendMessage(protocol::ctrl_fw_mode_msg(node_id_, protocol::ctrl_fw_mode_msg::FW_MODE_APP));
+    if(msg.read_APP_FW_hash()){
+        //split into smaller messages
+        uint8_t msg_len = protocol::ctrl_fw_version_msg::MSG_LEN_BYTES;
+        uint8_t N_PACKETS = Hash::MD5_SUM_LEN / msg_len;
+        for(size_t i = 0; i < N_PACKETS; i++)
+            can_driver_.sendMessage(protocol::ctrl_app_fw_hash_msg(node_id_, i, reference_md5 + (i*msg_len)));
+    }
 }
 
 void Battery_Node::recvd_ctrl_set_stay_in_boot(protocol::ctrl_set_stay_in_boot_msg& msg) {

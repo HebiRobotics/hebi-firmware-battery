@@ -14,6 +14,7 @@
 #include "Beep_Controller.h"
 
 #include "nodes/base_node.h"
+#include "hash.h"
 
 namespace hebi::firmware {
 
@@ -121,6 +122,8 @@ protected:
 
     hardware::battery_data last_battery_data_ {};
     uint64_t last_battery_data_counter_ {0};
+    
+    uint8_t reference_md5[Hash::MD5_SUM_LEN];
 
     hardware::Flash_Database& database_;
     modules::LED_Controller& led_;
