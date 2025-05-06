@@ -8,6 +8,7 @@
 #include "drivers/power_control.h"
 #include "Flash_Database.h"
 #include "drivers/BQ34Z100_I2C.h"
+#include "Info_Handler.h"
 
 #include "LED_Controller.h"
 #include "Pushbutton_Controller.h"
@@ -18,7 +19,7 @@
 
 namespace hebi::firmware {
 
-class Battery_Node : public protocol::Base_Node {
+class Battery_Node : public modules::Info_Handler {
     enum class NodeState {
         INIT = 0,                   //Startup Value
         LOW_POWER_TIMEOUT = 1,      //Waiting to shutdown
@@ -89,7 +90,6 @@ protected:
     static const uint16_t FAULT_CODE_REVERSE_POLARITY = 0x01;
     static const uint16_t FAULT_CODE_UNDERVOLTAGE = 0x02;
 
-    void initNodeID();
     void changeNodeState(NodeState state);
     void changeNodeStateFromISR(NodeState state);
     void changeNodeStateUnsafe(NodeState state);
@@ -100,7 +100,6 @@ protected:
     void recvd_ctrl_set_node_id(protocol::ctrl_set_node_id_msg& msg) override;
     void recvd_ctrl_start_acquisition(protocol::ctrl_start_acquisition_msg& msg) override; 
     void recvd_ctrl_stop_acquisition(protocol::ctrl_stop_acquisition_msg& msg) override; 
-    void recvd_ctrl_read_info(protocol::ctrl_read_info_msg& msg) override;
     void recvd_ctrl_set_stay_in_boot(protocol::ctrl_set_stay_in_boot_msg& msg) override;
     void recvd_ctrl_reset(protocol::ctrl_reset_msg& msg) override;
 
@@ -114,8 +113,6 @@ protected:
 
     bool battery_connected_ { false };
     bool send_battery_data_ { false };
-    bool node_id_valid_ { false };
-    uint8_t node_id_ { protocol::DEFAULT_NODE_ID };
     NodeState state_ { NodeState::INIT };
     uint64_t state_counter_ {0};
     uint16_t fault_code_ {0};

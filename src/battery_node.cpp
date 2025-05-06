@@ -17,19 +17,11 @@ Battery_Node::Battery_Node(hardware::Flash_Database& database,
     protocol::CAN_driver& can_driver,
     hardware::BQ34Z100_I2C& bat_i2c,
     hardware::Power_Control& power_ctrl) :
+    Info_Handler(database, can_driver),
     database_(database), led_(led), button_(button_ctrl), beeper_(beeper),
     can_driver_(can_driver), bat_i2c_(bat_i2c), power_ctrl_(power_ctrl) {
     
-    initNodeID();
     changeNodeStateUnsafe(NodeState::LOW_POWER_TIMEOUT);
-    database.get(hardware::FlashDatabaseKey::APPLICATION_HASH, reference_md5);
-    database.get(hardware::FlashDatabaseKey::SERIAL_NUMBER, serial_number_);
-}
-
-void Battery_Node::initNodeID(){
-    node_id_valid_ = database_.get(hardware::FlashDatabaseKey::NODE_ID, node_id_);
-    if(!node_id_valid_)
-        node_id_ = protocol::DEFAULT_NODE_ID;
 }
 
 void Battery_Node::update(bool chg_detect, bool polarity_ok, uint16_t v_bat, uint16_t v_ext) {
@@ -440,39 +432,6 @@ void Battery_Node::recvd_ctrl_set_node_id(protocol::ctrl_set_node_id_msg& msg){
         initNodeID();
 
         changeNodeState(NodeState::ID_ACQUISITION_DONE);
-    }
-}
-
-void Battery_Node::recvd_ctrl_read_info(protocol::ctrl_read_info_msg& msg) { 
-    if(msg.EID.node_id != node_id_) return;
-    
-    uint8_t guid[8] = {}; //TODO - fill this in
-
-    if(msg.read_GUID()) can_driver_.sendMessage(protocol::ctrl_guid_msg(node_id_, 0, *(uint64_t*)UID_BASE));
-    if(msg.read_elec_type()) can_driver_.sendMessage(protocol::ctrl_elec_type_msg(node_id_, ELECTRICAL_TYPE));
-    if(msg.read_HW_type()) can_driver_.sendMessage(protocol::ctrl_hw_type_msg(node_id_, BOARD_TYPE));
-    if(msg.read_FW_version()){
-        size_t size = strlen(FIRMWARE_REVISION);
-        size_t msg_len = protocol::ctrl_fw_version_msg::MSG_LEN_BYTES;
-        size_t ind = (size / msg_len) + 1;
-        for(size_t i = 0; i < ind; i++)
-            can_driver_.sendMessage(protocol::ctrl_fw_version_msg(node_id_, i, FIRMWARE_REVISION + (i*msg_len)));
-    }
-    if(msg.read_FW_mode()) can_driver_.sendMessage(protocol::ctrl_fw_mode_msg(node_id_, protocol::ctrl_fw_mode_msg::FW_MODE_APP));
-    if(msg.read_APP_FW_hash()){
-        //split into smaller messages
-        uint8_t msg_len = protocol::ctrl_fw_version_msg::MSG_LEN_BYTES;
-        uint8_t N_PACKETS = Hash::MD5_SUM_LEN / msg_len;
-        for(size_t i = 0; i < N_PACKETS; i++)
-            can_driver_.sendMessage(protocol::ctrl_app_fw_hash_msg(node_id_, i, reference_md5 + (i*msg_len)));
-    }
-    if(msg.read_serial_number()){
-        //split into smaller messages
-        size_t size = strlen((const char*) serial_number_);
-        uint8_t msg_len = protocol::ctrl_serial_num_msg::MSG_LEN_BYTES;
-        uint8_t N_PACKETS = (size / msg_len) + 1;
-        for(size_t i = 0; i < N_PACKETS; i++)
-            can_driver_.sendMessage(protocol::ctrl_serial_num_msg(node_id_, i, serial_number_ + (i*msg_len)));
     }
 }
 
