@@ -42,7 +42,7 @@ using namespace hebi::firmware;
 
 
 const static I2CConfig I2C_BATTERY_CONFIG = {
-    0x00000E14, //this is generated using STM32CubeMX
+    0x00C0EAFF, //this is generated using STM32CubeMX
     0,
     0
 };
