@@ -42,8 +42,10 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok, uint16_t v_bat, uin
     last_battery_data_counter_++;
     battery_connected_ = bat_i2c_.batteryPresent();
 
+    #ifndef LOW_POWER_MEASURE
     if(!battery_connected_ && state_ != NodeState::NO_BATTERY_DETECTED)
         changeNodeState(NodeState::NO_BATTERY_DETECTED);
+    #endif
 
     //Update with latest fuel gauge data
     if(bat_i2c_.hasData()){
@@ -97,8 +99,6 @@ void Battery_Node::update(bool chg_detect, bool polarity_ok, uint16_t v_bat, uin
 
         if(!polarity_ok) { //Reverse polarity fault
             enterFaultState(FAULT_CODE_REVERSE_POLARITY);
-        } else if (!battery_connected_) {
-            changeNodeState(NodeState::NO_BATTERY_DETECTED);
         } else if(button_.enabled()){
             changeNodeState(NodeState::OUTPUT_ENABLED);
         } else if(v_ext > CHARGE_VOLTAGE_LOW_THR) {
